@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索结果 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-sidebar {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tab-active {
+            background: rgba(230, 126, 34, 0.2);
+            color: #FFE8D6;
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+        
+        .tab-inactive {
+            background: rgba(44, 62, 80, 0.5);
+            color: #B2BEC3;
+            border: 1px solid rgba(255, 232, 214, 0.1);
+        }
+        
+        .tab-inactive:hover {
+            background: rgba(44, 62, 80, 0.8);
+            color: #FFE8D6;
+            border: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .search-highlight {
+            background-color: rgba(230, 126, 34, 0.3);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-between h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+            
+            <!-- 主导航 -->
+            <nav id="main-nav" class="hidden md:flex items-center space-x-8">
+                <a href="P-HOME.html" class="text-text-secondary hover:text-primary transition-colors py-1">首页</a>
+                <a href="P-CASE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
+                <a href="P-CIRCLE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">圈子</a>
+                <a href="P-QUESTION_BANK.html" class="text-text-secondary hover:text-primary transition-colors py-1">题库</a>
+            </nav>
+            
+            <!-- 搜索框和用户区域 -->
+            <div id="user-section" class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden lg:block">
+                    <input type="text" id="global-search" placeholder="搜索案例、知识点..." 
+                           class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+                
+                <!-- 消息通知 -->
+                <button id="notification-btn" class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
+                </button>
+                
+                <!-- 用户头像 -->
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img src="https://s.coze.cn/image/CU9jcUkaxDE/" 
+                         alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
+                    <span class="hidden md:block text-sm">学法者</span>
+                    <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- 左侧菜单 -->
+        <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
+            <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-home-alt text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="P-CIRCLE_LIST.html" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                <a href="P-QUESTION_BANK.html" id="nav-questions" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-question-circle text-lg"></i>
+                    <span>题库</span>
+                </a>
+                <a href="P-KNOWLEDGE_MAP.html" id="nav-knowledge" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-project-diagram text-lg"></i>
+                    <span>知识图谱</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
+                
+                <div class="border-t border-dark-border my-4"></div>
+                
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-cog text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main id="main-content" class="flex-1 p-8 min-h-screen">
+            <!-- 页面头部 -->
+            <header id="page-header" class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-3xl font-bold gradient-text mb-2">搜索结果</h2>
+                        <nav class="text-sm text-text-secondary">
+                            <a href="P-HOME.html" class="hover:text-primary transition-colors">首页</a>
+                            <span class="mx-2">/</span>
+                            <span>搜索结果</span>
+                        </nav>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-text-secondary">搜索关键词</div>
+                        <div id="search-keyword" class="text-lg font-semibold text-secondary">劳动法</div>
+                    </div>
+                </div>
+                
+                <!-- 搜索结果统计 -->
+                <div id="search-stats" class="glass-card rounded-lg p-4">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-text-secondary">找到</span>
+                        <span id="total-results" class="text-secondary font-semibold">156</span>
+                        <span class="text-text-secondary">个相关结果</span>
+                        <span class="text-text-secondary">用时</span>
+                        <span class="text-text-secondary">0.32秒</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 结果分类切换 -->
+            <section id="category-tabs" class="mb-8">
+                <div class="flex space-x-2 overflow-x-auto pb-2">
+                    <button id="tab-all" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-active whitespace-nowrap" data-category="all">
+                        全部 <span class="ml-1">(156)</span>
+                    </button>
+                    <button id="tab-cases" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="cases">
+                        案例 <span class="ml-1">(45)</span>
+                    </button>
+                    <button id="tab-knowledge" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="knowledge">
+                        知识点 <span class="ml-1">(32)</span>
+                    </button>
+                    <button id="tab-materials" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="materials">
+                        学习资料 <span class="ml-1">(28)</span>
+                    </button>
+                    <button id="tab-posts" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="posts">
+                        讨论帖子 <span class="ml-1">(51)</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 搜索结果列表 -->
+            <section id="search-results" class="mb-8">
+                <div id="results-container" class="space-y-6">
+                    <!-- 搜索结果将通过JavaScript动态生成 -->
+                </div>
+                
+                <!-- 无结果提示 -->
+                <div id="no-results" class="glass-card rounded-xl p-12 text-center hidden">
+                    <i class="fas fa-search text-6xl text-text-secondary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-text-primary mb-2">没有找到相关结果</h3>
+                    <p class="text-text-secondary mb-6">请尝试使用其他关键词或浏览我们的案例库</p>
+                    <button id="browse-cases" class="px-6 py-3 bg-gradient-to-r from-secondary to-accent text-white rounded-lg hover:opacity-90 transition-all">
+                        浏览案例库
+                    </button>
+                </div>
+            </section>
+
+            <!-- 分页区域 -->
+            <section id="pagination" class="glass-card rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-text-secondary">
+                        显示第 <span id="page-start">1</span> - <span id="page-end">10</span> 条，共 <span id="total-items">156</span> 条结果
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button id="prev-page" class="px-3 py-2 text-sm border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-left mr-1"></i>上一页
+                        </button>
+                        
+                        <div id="page-numbers" class="flex space-x-1">
+                            <!-- 页码按钮将通过JavaScript动态生成 -->
+                        </div>
+                        
+                        <button id="next-page" class="px-3 py-2 text-sm border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                            下一页<i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 解析URL参数的辅助函数
+            function getUrlParams() {
+                const params = {};
+                const queryString = window.location.search.substring(1);
+                const urlParams = new URLSearchParams(queryString);
+                
+                for(const [key, value] of urlParams.entries()) {
+                    params[key] = value;
+                }
+                return params;
+            }
+
+            // 获取URL参数
+            const params = getUrlParams();
+            const keyword = params.keyword || '劳动法';
+            let currentCategory = 'all';
+            let currentPage = 1;
+            const pageSize = 10;
+
+            // 更新页面显示的关键词
+            document.querySelector('#search-keyword').textContent = keyword;
+            document.querySelector('#global-search').value = keyword;
+
+            // 模拟搜索结果数据
+            const mockResults = {
+                all: [
+                    {
+                        id: 'case1',
+                        type: 'cases',
+                        title: '劳动合同纠纷案例：<span class="search-highlight">劳动法</span>维权成功案例',
+                        summary: '某公司未签订劳动合同，员工依据<span class="search-highlight">劳动法</span>相关规定成功维权，获得双倍工资赔偿...',
+                        source: '案例库',
+                        time: '2024-01-15',
+                        relevance: 95
+                    },
+                    {
+                        id: 'knowledge1',
+                        type: 'knowledge',
+                        title: '<span class="search-highlight">劳动法</span>基础知识详解',
+                        summary: '全面介绍<span class="search-highlight">劳动法</span>的基本原则、适用范围和主要条款，帮助劳动者了解自身权益...',
+                        source: '知识图谱',
+                        time: '2024-01-10',
+                        relevance: 90
+                    },
+                    {
+                        id: 'material1',
+                        type: 'materials',
+                        title: '<span class="search-highlight">劳动法</span>律条文完整版',
+                        summary: '最新<span class="search-highlight">劳动法</span>律法规全文，包含劳动合同、工资福利、社会保险等重要内容...',
+                        source: '学习资料',
+                        time: '2024-01-08',
+                        relevance: 88
+                    },
+                    {
+                        id: 'post1',
+                        type: 'posts',
+                        title: '求助：<span class="search-highlight">劳动法</span>规定的加班工资计算方式',
+                        summary: '想了解<span class="search-highlight">劳动法</span>中关于加班工资的具体计算方法，特别是节假日加班的规定...',
+                        source: '职场权益保护圈',
+                        time: '2024-01-16',
+                        relevance: 85
+                    },
+                    {
+                        id: 'case2',
+                        type: 'cases',
+                        title: '试用期解雇争议：<span class="search-highlight">劳动法</span>如何保护劳动者',
+                        summary: '试用期内被无故解雇，通过<span class="search-highlight">劳动法</span>维权获得经济补偿的典型案例...',
+                        source: '案例库',
+                        time: '2024-01-12',
+                        relevance: 82
+                    }
+                ],
+                cases: [
+                    {
+                        id: 'case1',
+                        type: 'cases',
+                        title: '劳动合同纠纷案例：<span class="search-highlight">劳动法</span>维权成功案例',
+                        summary: '某公司未签订劳动合同，员工依据<span class="search-highlight">劳动法</span>相关规定成功维权，获得双倍工资赔偿...',
+                        source: '案例库',
+                        time: '2024-01-15',
+                        relevance: 95
+                    },
+                    {
+                        id: 'case2',
+                        type: 'cases',
+                        title: '试用期解雇争议：<span class="search-highlight">劳动法</span>如何保护劳动者',
+                        summary: '试用期内被无故解雇，通过<span class="search-highlight">劳动法</span>维权获得经济补偿的典型案例...',
+                        source: '案例库',
+                        time: '2024-01-12',
+                        relevance: 82
+                    }
+                ],
+                knowledge: [
+                    {
+                        id: 'knowledge1',
+                        type: 'knowledge',
+                        title: '<span class="search-highlight">劳动法</span>基础知识详解',
+                        summary: '全面介绍<span class="search-highlight">劳动法</span>的基本原则、适用范围和主要条款，帮助劳动者了解自身权益...',
+                        source: '知识图谱',
+                        time: '2024-01-10',
+                        relevance: 90
+                    }
+                ],
+                materials: [
+                    {
+                        id: 'material1',
+                        type: 'materials',
+                        title: '<span class="search-highlight">劳动法</span>律条文完整版',
+                        summary: '最新<span class="search-highlight">劳动法</span>律法规全文，包含劳动合同、工资福利、社会保险等重要内容...',
+                        source: '学习资料',
+                        time: '2024-01-08',
+                        relevance: 88
+                    }
+                ],
+                posts: [
+                    {
+                        id: 'post1',
+                        type: 'posts',
+                        title: '求助：<span class="search-highlight">劳动法</span>规定的加班工资计算方式',
+                        summary: '想了解<span class="search-highlight">劳动法</span>中关于加班工资的具体计算方法，特别是节假日加班的规定...',
+                        source: '职场权益保护圈',
+                        time: '2024-01-16',
+                        relevance: 85
+                    }
+                ]
+            };
+
+            // 渲染搜索结果
+            function renderResults(category = 'all', page = 1) {
+                const results = mockResults[category] || [];
+                const startIndex = (page - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const pageResults = results.slice(startIndex, endIndex);
+                
+                const container = document.querySelector('#results-container');
+                const noResults = document.querySelector('#no-results');
+                
+                if (pageResults.length === 0) {
+                    container.innerHTML = '';
+                    noResults.classList.remove('hidden');
+                    return;
+                }
+                
+                noResults.classList.add('hidden');
+                
+                container.innerHTML = pageResults.map(result => `
+                    <div class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-id="${result.id}" data-type="${result.type}">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br ${getTypeColor(result.type)} rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="${getTypeIcon(result.type)} text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h4 class="font-semibold text-primary text-lg leading-relaxed">${result.title}</h4>
+                                    <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">${getTypeName(result.type)}</span>
+                                </div>
+                                <p class="text-sm text-text-secondary mb-3 leading-relaxed">${result.summary}</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4 text-xs text-text-secondary">
+                                        <span><i class="fas fa-map-marker-alt mr-1"></i>${result.source}</span>
+                                        <span><i class="fas fa-clock mr-1"></i>${result.time}</span>
+                                        <span><i class="fas fa-fire mr-1"></i>相关度 ${result.relevance}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // 添加点击事件
+                container.querySelectorAll('.glass-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const type = this.dataset.type;
+                        handleResultClick(id, type);
+                    });
+                });
+                
+                // 更新分页信息
+                updatePagination(results.length, page);
+            }
+
+            // 获取类型对应的颜色
+            function getTypeColor(type) {
+                const colors = {
+                    cases: 'from-secondary to-accent',
+                    knowledge: 'from-accent to-secondary',
+                    materials: 'from-primary to-secondary',
+                    posts: 'from-secondary to-primary'
+                };
+                return colors[type] || 'from-secondary to-accent';
+            }
+
+            // 获取类型对应的图标
+            function getTypeIcon(type) {
+                const icons = {
+                    cases: 'fas fa-briefcase',
+                    knowledge: 'fas fa-lightbulb',
+                    materials: 'fas fa-book',
+                    posts: 'fas fa-comments-alt'
+                };
+                return icons[type] || 'fas fa-search';
+            }
+
+            // 获取类型显示名称
+            function getTypeName(type) {
+                const names = {
+                    cases: '案例',
+                    knowledge: '知识点',
+                    materials: '学习资料',
+                    posts: '讨论帖子'
+                };
+                return names[type] || '未知';
+            }
+
+            // 处理搜索结果点击
+            function handleResultClick(id, type) {
+                switch(type) {
+                    case 'cases':
+                        window.location.href = `P-CASE_DETAIL.html?caseId=${id}`;
+                        break;
+                    case 'knowledge':
+                        window.location.href = `P-KNOWLEDGE_MAP.html?knowledgeId=${id}`;
+                        break;
+                    case 'materials':
+                        window.location.href = `P-LEARNING_MATERIAL.html?materialId=${id}`;
+                        break;
+                    case 'posts':
+                        window.location.href = `P-POST_DETAIL.html?postId=${id}`;
+                        break;
+                    default:
+                        console.log('未知类型:', type);
+                }
+            }
+
+            // 更新分页信息
+            function updatePagination(totalItems, currentPage) {
+                const totalPages = Math.ceil(totalItems / pageSize);
+                const startItem = (currentPage - 1) * pageSize + 1;
+                const endItem = Math.min(currentPage * pageSize, totalItems);
+                
+                document.querySelector('#page-start').textContent = startItem;
+                document.querySelector('#page-end').textContent = endItem;
+                document.querySelector('#total-items').textContent = totalItems;
+                
+                // 更新分页按钮状态
+                const prevBtn = document.querySelector('#prev-page');
+                const nextBtn = document.querySelector('#next-page');
+                
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage === totalPages;
+                
+                // 生成页码按钮
+                generatePageNumbers(totalPages, currentPage);
+            }
+
+            // 生成页码按钮
+            function generatePageNumbers(totalPages, currentPage) {
+                const container = document.querySelector('#page-numbers');
+                container.innerHTML = '';
+                
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const button = document.createElement('button');
+                    button.className = `px-3 py-2 text-sm rounded-lg transition-all ${
+                        i === currentPage 
+                            ? 'bg-secondary text-white' 
+                            : 'border border-glass-border text-text-secondary hover:text-primary hover:border-secondary'
+                    }`;
+                    button.textContent = i;
+                    button.addEventListener('click', () => {
+                        currentPage = i;
+                        renderResults(currentCategory, currentPage);
+                    });
+                    container.appendChild(button);
+                }
+            }
+
+            // 标签页切换事件
+            const tabs = document.querySelectorAll('[data-category]');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    currentCategory = category;
+                    currentPage = 1;
+                    
+                    // 更新标签页样式
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    this.classList.remove('tab-inactive');
+                    this.classList.add('tab-active');
+                    
+                    // 重新渲染结果
+                    renderResults(category, 1);
+                });
+            });
+
+            // 分页按钮事件
+            document.querySelector('#prev-page').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderResults(currentCategory, currentPage);
+                }
+            });
+
+            document.querySelector('#next-page').addEventListener('click', function() {
+                const totalItems = mockResults[currentCategory]?.length || 0;
+                const totalPages = Math.ceil(totalItems / pageSize);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderResults(currentCategory, currentPage);
+                }
+            });
+
+            // 全局搜索事件
+            document.querySelector('#global-search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+                    }
+                }
+            });
+
+            // 浏览案例库按钮
+            document.querySelector('#browse-cases').addEventListener('click', function() {
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            // 用户头像点击事件
+            document.querySelector('#user-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            // 侧边栏导航事件
+            document.querySelector('#nav-home').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#nav-cases').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#nav-circles').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CIRCLE_LIST.html';
+            });
+
+            document.querySelector('#nav-questions').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-QUESTION_BANK.html';
+            });
+
+            document.querySelector('#nav-knowledge').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-KNOWLEDGE_MAP.html';
+            });
+
+            document.querySelector('#nav-materials').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-LEARNING_MATERIAL.html';
+            });
+
+            document.querySelector('#nav-ranking').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-RANKING.html';
+            });
+
+            document.querySelector('#nav-profile').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            document.querySelector('#nav-settings').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 顶部导航事件
+            document.querySelector('#main-nav a[href="P-HOME.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-CASE_LIST.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-CIRCLE_LIST.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CIRCLE_LIST.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-QUESTION_BANK.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-QUESTION_BANK.html';
+            });
+
+            // 初始化页面
+            renderResults(currentCategory, currentPage);
+        });
+    </script>
+</body>
+</html>

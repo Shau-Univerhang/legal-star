@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习圈子 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-sidebar {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .filter-active {
+            background: rgba(230, 126, 34, 0.2);
+            border-color: rgba(230, 126, 34, 0.5);
+            color: #E67E22;
+        }
+        
+        .pagination-active {
+            background: rgba(230, 126, 34, 0.3);
+            border-color: #E67E22;
+            color: #E67E22;
+        }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-between h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+            
+            <!-- 主导航 -->
+            <nav id="main-nav" class="hidden md:flex items-center space-x-8">
+                <a href="P-HOME.html" class="text-text-secondary hover:text-primary transition-colors py-1">首页</a>
+                <a href="P-CASE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
+                <a href="#" class="text-primary font-medium border-b-2 border-primary py-1">圈子</a>
+                <a href="P-QUESTION_BANK.html" class="text-text-secondary hover:text-primary transition-colors py-1">题库</a>
+            </nav>
+            
+            <!-- 搜索框和用户区域 -->
+            <div id="user-section" class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden lg:block">
+                    <input type="text" id="global-search" placeholder="搜索案例、知识点..." 
+                           class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+                
+                <!-- 消息通知 -->
+                <button id="notification-btn" class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
+                </button>
+                
+                <!-- 用户头像 -->
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img src="https://s.coze.cn/image/0zROdQipak8/" 
+                         alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
+                    <span class="hidden md:block text-sm">学法者</span>
+                    <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- 左侧菜单 -->
+        <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
+            <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-home-alt text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="#" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                <a href="P-QUESTION_BANK.html" id="nav-questions" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-question-circle text-lg"></i>
+                    <span>题库</span>
+                </a>
+                <a href="P-KNOWLEDGE_MAP.html" id="nav-knowledge" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-project-diagram text-lg"></i>
+                    <span>知识图谱</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
+                
+                <div class="border-t border-dark-border my-4"></div>
+                
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-cog text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main id="main-content" class="flex-1 p-8 min-h-screen">
+            <!-- 页面头部 -->
+            <header id="page-header" class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold gradient-text mb-2">学习圈子</h2>
+                        <nav id="breadcrumb" class="text-sm text-text-secondary">
+                            <a href="P-HOME.html" class="hover:text-primary transition-colors">首页</a>
+                            <span class="mx-2">/</span>
+                            <span class="text-primary">学习圈子</span>
+                        </nav>
+                    </div>
+                    <button id="create-circle-btn" class="px-6 py-2 bg-gradient-to-r from-secondary to-accent text-white rounded-lg hover:opacity-90 transition-all transform hover:scale-105 shadow-md">
+                        <i class="fas fa-plus mr-2"></i>创建圈子
+                    </button>
+                </div>
+            </header>
+
+            <!-- 工具栏区域 -->
+            <section id="toolbar" class="glass-card rounded-xl p-6 mb-8">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <!-- 搜索框 -->
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" id="circle-search" placeholder="搜索圈子名称或关键词..." 
+                               class="w-full px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                    </div>
+                    
+                    <!-- 筛选条件 -->
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-text-secondary">筛选：</span>
+                            <button id="filter-hot" class="px-3 py-1 text-sm border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all filter-active">
+                                热门
+                            </button>
+                            <button id="filter-latest" class="px-3 py-1 text-sm border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                                最新
+                            </button>
+                            <button id="filter-my" class="px-3 py-1 text-sm border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                                我的圈子
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 圈子列表 -->
+            <section id="circle-list" class="mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 圈子卡片1 -->
+                    <div id="circle-card-1" class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-circle-id="circle1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-briefcase text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-primary">职场权益保护圈</h3>
+                                    <p class="text-sm text-text-secondary">创建者：劳动法专家</p>
+                                </div>
+                            </div>
+                            <button id="join-circle-1" class="px-3 py-1 text-sm bg-secondary bg-opacity-20 text-secondary rounded-lg hover:bg-opacity-30 transition-all">
+                                加入
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">讨论职场相关法律问题，分享维权经验，让我们一起维护劳动者的合法权益。</p>
+                        <div class="flex items-center justify-between text-xs text-text-secondary mb-3">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fas fa-users mr-1"></i>2.3万人</span>
+                                <span><i class="fas fa-comments mr-1"></i>1.2万讨论</span>
+                            </div>
+                            <span>今日活跃: 156人</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-1 bg-secondary bg-opacity-20 text-secondary rounded text-xs">劳动法</span>
+                            <span class="px-2 py-1 bg-accent bg-opacity-20 text-accent rounded text-xs">劳动合同</span>
+                            <span class="px-2 py-1 bg-primary bg-opacity-20 text-primary rounded text-xs">维权</span>
+                        </div>
+                    </div>
+
+                    <!-- 圈子卡片2 -->
+                    <div id="circle-card-2" class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-circle-id="circle2">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-accent to-secondary rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-heart text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-primary">婚姻家庭法律圈</h3>
+                                    <p class="text-sm text-text-secondary">创建者：婚姻律师</p>
+                                </div>
+                            </div>
+                            <button id="join-circle-2" class="px-3 py-1 text-sm bg-secondary bg-opacity-20 text-secondary rounded-lg hover:bg-opacity-30 transition-all">
+                                加入
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">交流婚姻家庭法律知识，解答相关疑问，维护家庭和谐稳定。</p>
+                        <div class="flex items-center justify-between text-xs text-text-secondary mb-3">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fas fa-users mr-1"></i>1.8万人</span>
+                                <span><i class="fas fa-comments mr-1"></i>8.5千讨论</span>
+                            </div>
+                            <span>今日活跃: 89人</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-1 bg-accent bg-opacity-20 text-accent rounded text-xs">婚姻法</span>
+                            <span class="px-2 py-1 bg-primary bg-opacity-20 text-primary rounded text-xs">财产分割</span>
+                            <span class="px-2 py-1 bg-secondary bg-opacity-20 text-secondary rounded text-xs">离婚</span>
+                        </div>
+                    </div>
+
+                    <!-- 圈子卡片3 -->
+                    <div id="circle-card-3" class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-circle-id="circle3">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-shopping-cart text-dark"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-primary">消费者权益保护圈</h3>
+                                    <p class="text-sm text-text-secondary">创建者：消协志愿者</p>
+                                </div>
+                            </div>
+                            <button id="join-circle-3" class="px-3 py-1 text-sm bg-secondary bg-opacity-20 text-secondary rounded-lg hover:bg-opacity-30 transition-all">
+                                加入
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">分享消费维权经验，学习消费者权益保护法，让每一次消费都安心。</p>
+                        <div class="flex items-center justify-between text-xs text-text-secondary mb-3">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fas fa-users mr-1"></i>3.1万人</span>
+                                <span><i class="fas fa-comments mr-1"></i>2.5万讨论</span>
+                            </div>
+                            <span>今日活跃: 234人</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-1 bg-primary bg-opacity-20 text-primary rounded text-xs">消费者权益</span>
+                            <span class="px-2 py-1 bg-secondary bg-opacity-20 text-secondary rounded text-xs">维权</span>
+                            <span class="px-2 py-1 bg-accent bg-opacity-20 text-accent rounded text-xs">投诉</span>
+                        </div>
+                    </div>
+
+                    <!-- 圈子卡片4 -->
+                    <div id="circle-card-4" class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-circle-id="circle4">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-graduation-cap text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-primary">法律资格考试圈</h3>
+                                    <p class="text-sm text-text-secondary">创建者：法考达人</p>
+                                </div>
+                            </div>
+                            <button id="join-circle-4" class="px-3 py-1 text-sm bg-secondary bg-opacity-20 text-secondary rounded-lg hover:bg-opacity-30 transition-all">
+                                加入
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">分享法考经验，交流学习心得，一起攻克法律职业资格考试。</p>
+                        <div class="flex items-center justify-between text-xs text-text-secondary mb-3">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fas fa-users mr-1"></i>1.5万人</span>
+                                <span><i class="fas fa-comments mr-1"></i>9.8千讨论</span>
+                            </div>
+                            <span>今日活跃: 67人</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-1 bg-secondary bg-opacity-20 text-secondary rounded text-xs">法考</span>
+                            <span class="px-2 py-1 bg-accent bg-opacity-20 text-accent rounded text-xs">考试</span>
+                            <span class="px-2 py-1 bg-primary bg-opacity-20 text-primary rounded text-xs">备考</span>
+                        </div>
+                    </div>
+
+                    <!-- 圈子卡片5 -->
+                    <div id="circle-card-5" class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-circle-id="circle5">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-accent to-secondary rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-home text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-primary">房产法律圈</h3>
+                                    <p class="text-sm text-text-secondary">创建者：房产律师</p>
+                                </div>
+                            </div>
+                            <button id="join-circle-5" class="px-3 py-1 text-sm bg-secondary bg-opacity-20 text-secondary rounded-lg hover:bg-opacity-30 transition-all">
+                                加入
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">讨论房产买卖、租赁、继承等法律问题，保护您的房产权益。</p>
+                        <div class="flex items-center justify-between text-xs text-text-secondary mb-3">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fas fa-users mr-1"></i>9.8千人</span>
+                                <span><i class="fas fa-comments mr-1"></i>5.2千讨论</span>
+                            </div>
+                            <span>今日活跃: 45人</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-1 bg-accent bg-opacity-20 text-accent rounded text-xs">房产法</span>
+                            <span class="px-2 py-1 bg-primary bg-opacity-20 text-primary rounded text-xs">买卖</span>
+                            <span class="px-2 py-1 bg-secondary bg-opacity-20 text-secondary rounded text-xs">租赁</span>
+                        </div>
+                    </div>
+
+                    <!-- 圈子卡片6 -->
+                    <div id="circle-card-6" class="glass-card rounded-xl p-6 hover-glow cursor-pointer" data-circle-id="circle6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-balance-scale text-dark"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-primary">刑法案例分析圈</h3>
+                                    <p class="text-sm text-text-secondary">创建者：刑法专家</p>
+                                </div>
+                            </div>
+                            <button id="join-circle-6" class="px-3 py-1 text-sm bg-secondary bg-opacity-20 text-secondary rounded-lg hover:bg-opacity-30 transition-all">
+                                加入
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">深入分析经典刑法案例，探讨刑法理论与实践应用。</p>
+                        <div class="flex items-center justify-between text-xs text-text-secondary mb-3">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fas fa-users mr-1"></i>7.6千人</span>
+                                <span><i class="fas fa-comments mr-1"></i>3.8千讨论</span>
+                            </div>
+                            <span>今日活跃: 32人</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-1 bg-primary bg-opacity-20 text-primary rounded text-xs">刑法</span>
+                            <span class="px-2 py-1 bg-secondary bg-opacity-20 text-secondary rounded text-xs">案例</span>
+                            <span class="px-2 py-1 bg-accent bg-opacity-20 text-accent rounded text-xs">分析</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 分页区域 -->
+            <section id="pagination" class="flex items-center justify-center">
+                <div class="flex items-center space-x-2">
+                    <button id="prev-page" class="px-3 py-1 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="page-1" class="px-3 py-1 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all pagination-active">
+                        1
+                    </button>
+                    <button id="page-2" class="px-3 py-1 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                        2
+                    </button>
+                    <button id="page-3" class="px-3 py-1 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                        3
+                    </button>
+                    <span class="px-2 text-text-secondary">...</span>
+                    <button id="page-10" class="px-3 py-1 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                        10
+                    </button>
+                    <button id="next-page" class="px-3 py-1 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 创建圈子模态框 -->
+    <div id="create-circle-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glass-card rounded-xl p-6 w-full max-w-md">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-primary">创建圈子</h3>
+                    <button id="close-modal" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="create-circle-form" class="space-y-4">
+                    <div>
+                        <label for="circle-name" class="block text-sm font-medium text-text-secondary mb-2">圈子名称</label>
+                        <input type="text" id="circle-name" name="circle-name" required
+                               class="w-full px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors"
+                               placeholder="请输入圈子名称">
+                    </div>
+                    <div>
+                        <label for="circle-description" class="block text-sm font-medium text-text-secondary mb-2">圈子描述</label>
+                        <textarea id="circle-description" name="circle-description" rows="3" required
+                                  class="w-full px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors resize-none"
+                                  placeholder="请输入圈子描述"></textarea>
+                    </div>
+                    <div>
+                        <label for="circle-tags" class="block text-sm font-medium text-text-secondary mb-2">标签</label>
+                        <input type="text" id="circle-tags" name="circle-tags"
+                               class="w-full px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors"
+                               placeholder="请输入标签，用逗号分隔">
+                    </div>
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" id="cancel-create" class="flex-1 px-4 py-2 border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary transition-all">
+                            取消
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-secondary to-accent text-white rounded-lg hover:opacity-90 transition-all">
+                            创建
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 搜索框交互
+            const searchInput = document.querySelector('#circle-search');
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+            
+            // 全局搜索
+            const globalSearch = document.querySelector('#global-search');
+            globalSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+                    }
+                }
+            });
+
+            // 筛选按钮交互
+            const filterButtons = document.querySelectorAll('[id^="filter-"]');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的激活状态
+                    filterButtons.forEach(btn => btn.classList.remove('filter-active'));
+                    // 激活当前按钮
+                    this.classList.add('filter-active');
+                    
+                    // 这里可以添加筛选逻辑
+                    console.log('筛选条件：', this.textContent);
+                });
+            });
+
+            // 圈子卡片点击事件
+            const circleCards = document.querySelectorAll('[id^="circle-card-"]');
+            circleCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // 如果点击的是加入按钮，不触发卡片点击
+                    if (e.target.closest('button[id^="join-circle-"]')) {
+                        return;
+                    }
+                    
+                    const circleId = this.dataset.circleId;
+                    window.location.href = `P-CIRCLE_DETAIL.html?circleId=${circleId}`;
+                });
+            });
+
+            // 加入圈子按钮事件
+            const joinButtons = document.querySelectorAll('[id^="join-circle-"]');
+            joinButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    if (this.textContent === '加入') {
+                        this.textContent = '已加入';
+                        this.classList.remove('bg-secondary', 'bg-opacity-20', 'text-secondary');
+                        this.classList.add('bg-accent', 'bg-opacity-20', 'text-accent');
+                    } else {
+                        this.textContent = '加入';
+                        this.classList.remove('bg-accent', 'bg-opacity-20', 'text-accent');
+                        this.classList.add('bg-secondary', 'bg-opacity-20', 'text-secondary');
+                    }
+                });
+            });
+
+            // 创建圈子按钮事件
+            document.querySelector('#create-circle-btn').addEventListener('click', function() {
+                document.querySelector('#create-circle-modal').classList.remove('hidden');
+            });
+
+            // 关闭模态框事件
+            document.querySelector('#close-modal').addEventListener('click', function() {
+                document.querySelector('#create-circle-modal').classList.add('hidden');
+            });
+
+            document.querySelector('#cancel-create').addEventListener('click', function() {
+                document.querySelector('#create-circle-modal').classList.add('hidden');
+            });
+
+            // 点击模态框背景关闭
+            document.querySelector('#create-circle-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+
+            // 创建圈子表单提交
+            document.querySelector('#create-circle-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const circleName = document.querySelector('#circle-name').value.trim();
+                const circleDescription = document.querySelector('#circle-description').value.trim();
+                const circleTags = document.querySelector('#circle-tags').value.trim();
+                
+                if (!circleName || !circleDescription) {
+                    alert('请填写圈子名称和描述');
+                    return;
+                }
+                
+                // 这里可以添加创建圈子的逻辑
+                console.log('创建圈子：', { circleName, circleDescription, circleTags });
+                
+                // 模拟创建成功
+                alert('圈子创建成功！');
+                document.querySelector('#create-circle-modal').classList.add('hidden');
+                
+                // 清空表单
+                this.reset();
+            });
+
+            // 分页按钮交互
+            const pageButtons = document.querySelectorAll('[id^="page-"]');
+            pageButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的激活状态
+                    pageButtons.forEach(btn => btn.classList.remove('pagination-active'));
+                    // 激活当前按钮
+                    this.classList.add('pagination-active');
+                    
+                    // 这里可以添加分页逻辑
+                    console.log('跳转到第', this.textContent, '页');
+                });
+            });
+
+            // 上一页下一页按钮
+            document.querySelector('#prev-page').addEventListener('click', function() {
+                console.log('上一页');
+            });
+
+            document.querySelector('#next-page').addEventListener('click', function() {
+                console.log('下一页');
+            });
+
+            // 导航菜单点击事件
+            document.querySelector('#nav-home').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#nav-cases').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#nav-questions').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-QUESTION_BANK.html';
+            });
+
+            document.querySelector('#nav-knowledge').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-KNOWLEDGE_MAP.html';
+            });
+
+            document.querySelector('#nav-materials').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-LEARNING_MATERIAL.html';
+            });
+
+            document.querySelector('#nav-ranking').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-RANKING.html';
+            });
+
+            document.querySelector('#nav-profile').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            document.querySelector('#nav-settings').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 用户头像点击事件
+            document.querySelector('#user-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            // 顶部导航点击事件
+            document.querySelector('#main-nav a[href="P-HOME.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-CASE_LIST.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-QUESTION_BANK.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-QUESTION_BANK.html';
+            });
+        });
+    </script>
+</body>
+</html>
