@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/copy-appui.js",
+    "copy:appui": "node scripts/copy-appui.js",
     "start": "next start",
     "lint": "next lint"
   },

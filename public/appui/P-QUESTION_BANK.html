@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-sidebar {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .question-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(244, 130, 36, 0.2);
+        }
+        
+        .option-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .option-card:hover {
+            border-color: rgba(230, 126, 34, 0.5);
+            background: rgba(230, 126, 34, 0.05);
+        }
+        
+        .option-selected {
+            border-color: #E67E22;
+            background: rgba(230, 126, 34, 0.1);
+        }
+        
+        .option-correct {
+            border-color: #27AE60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .option-incorrect {
+            border-color: #E74C3C;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .challenge-mode {
+            background: linear-gradient(135deg, rgba(230, 126, 34, 0.1), rgba(52, 73, 94, 0.1));
+            border: 2px solid rgba(230, 126, 34, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-between h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+            
+            <!-- 主导航 -->
+            <nav id="main-nav" class="hidden md:flex items-center space-x-8">
+                <a href="P-HOME.html" class="text-text-secondary hover:text-primary transition-colors py-1">首页</a>
+                <a href="P-CASE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
+                <a href="P-CIRCLE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">圈子</a>
+                <a href="#" class="text-primary font-medium border-b-2 border-primary py-1">题库</a>
+            </nav>
+            
+            <!-- 搜索框和用户区域 -->
+            <div id="user-section" class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden lg:block">
+                    <input type="text" id="global-search" placeholder="搜索案例、知识点..." 
+                           class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+                
+                <!-- 消息通知 -->
+                <button id="notification-btn" class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
+                </button>
+                
+                <!-- 用户头像 -->
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img src="https://s.coze.cn/image/NzTqPPxhHo8/" 
+                         alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
+                    <span class="hidden md:block text-sm">学法者</span>
+                    <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- 左侧菜单 -->
+        <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
+            <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-home-alt text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="P-CIRCLE_LIST.html" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                <a href="#" id="nav-questions" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
+                    <i class="fas fa-question-circle text-lg"></i>
+                    <span>题库</span>
+                </a>
+                <a href="P-KNOWLEDGE_MAP.html" id="nav-knowledge" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-project-diagram text-lg"></i>
+                    <span>知识图谱</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
+                
+                <div class="border-t border-dark-border my-4"></div>
+                
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-cog text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main id="main-content" class="flex-1 p-8 min-h-screen">
+            <!-- 页面头部 -->
+            <header id="page-header" class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold gradient-text mb-2">题库</h2>
+                        <nav class="text-sm text-text-secondary">
+                            <a href="P-HOME.html" class="hover:text-primary transition-colors">首页</a>
+                            <span class="mx-2">/</span>
+                            <span class="text-primary">题库</span>
+                        </nav>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-text-secondary">总题目数</div>
+                        <div class="text-lg font-semibold text-secondary">1,247</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 工具栏区域 -->
+            <section id="toolbar" class="glass-card rounded-xl p-6 mb-8">
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- 题目类型选择 -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-text-secondary">题目类型:</label>
+                        <select id="question-type-filter" class="px-3 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary focus:outline-none focus:border-secondary">
+                            <option value="">全部类型</option>
+                            <option value="single">单选题</option>
+                            <option value="multiple">多选题</option>
+                            <option value="judgment">判断题</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 知识点筛选 -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-text-secondary">知识点:</label>
+                        <select id="knowledge-filter" class="px-3 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary focus:outline-none focus:border-secondary">
+                            <option value="">全部知识点</option>
+                            <option value="labor">劳动法</option>
+                            <option value="marriage">婚姻法</option>
+                            <option value="contract">合同法</option>
+                            <option value="consumer">消费者权益</option>
+                            <option value="criminal">刑法</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 难度筛选 -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-text-secondary">难度:</label>
+                        <select id="difficulty-filter" class="px-3 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary focus:outline-none focus:border-secondary">
+                            <option value="">全部难度</option>
+                            <option value="easy">入门</option>
+                            <option value="medium">进阶</option>
+                            <option value="hard">专家</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 开始挑战按钮 -->
+                    <button id="start-challenge-btn" class="px-6 py-2 bg-gradient-to-r from-secondary to-accent text-white rounded-lg hover:opacity-90 transition-all transform hover:scale-105 shadow-md">
+                        <i class="fas fa-trophy mr-2"></i>开始挑战
+                    </button>
+                </div>
+            </section>
+
+            <!-- 挑战模式区域 -->
+            <section id="challenge-mode" class="glass-card challenge-mode rounded-xl p-6 mb-8 hidden">
+                <div class="text-center mb-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-2">挑战模式</h3>
+                    <p class="text-text-secondary">完成10道题目挑战，测试你的法律知识水平！</p>
+                </div>
+                
+                <div class="flex justify-center space-x-4 mb-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-secondary">0</div>
+                        <div class="text-sm text-text-secondary">已完成</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-accent">10</div>
+                        <div class="text-sm text-text-secondary">总题目</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary">0</div>
+                        <div class="text-sm text-text-secondary">正确率</div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button id="start-challenge-confirm" class="px-8 py-3 bg-gradient-to-r from-secondary to-accent text-white rounded-lg hover:opacity-90 transition-all transform hover:scale-105 shadow-md">
+                        <i class="fas fa-play mr-2"></i>开始挑战
+                    </button>
+                    <button id="exit-challenge" class="ml-4 px-6 py-3 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all">
+                        退出挑战
+                    </button>
+                </div>
+            </section>
+
+            <!-- 题目列表区域 -->
+            <section id="questions-list" class="mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 题目卡片1 -->
+                    <div class="question-card glass-card rounded-xl p-6" data-question-id="q1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex space-x-2">
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">单选题</span>
+                                <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">劳动法</span>
+                                <span class="text-xs bg-green-500 bg-opacity-20 text-green-400 px-2 py-1 rounded">入门</span>
+                            </div>
+                            <span class="text-xs text-text-secondary">已完成</span>
+                        </div>
+                        <h4 class="font-semibold text-primary mb-3">劳动合同的试用期最长不得超过几个月？</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">
+                                <i class="fas fa-check-circle text-green-400 mr-1"></i>已答对
+                            </span>
+                            <span class="text-xs text-text-secondary">难度: ★☆☆</span>
+                        </div>
+                    </div>
+
+                    <!-- 题目卡片2 -->
+                    <div class="question-card glass-card rounded-xl p-6" data-question-id="q2">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex space-x-2">
+                                <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">多选题</span>
+                                <span class="text-xs bg-primary bg-opacity-20 text-primary px-2 py-1 rounded">婚姻法</span>
+                                <span class="text-xs bg-yellow-500 bg-opacity-20 text-yellow-400 px-2 py-1 rounded">进阶</span>
+                            </div>
+                            <span class="text-xs text-text-secondary">未完成</span>
+                        </div>
+                        <h4 class="font-semibold text-primary mb-3">下列哪些情形属于夫妻共同财产？</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">
+                                <i class="fas fa-clock text-text-secondary mr-1"></i>待答题
+                            </span>
+                            <span class="text-xs text-text-secondary">难度: ★★☆</span>
+                        </div>
+                    </div>
+
+                    <!-- 题目卡片3 -->
+                    <div class="question-card glass-card rounded-xl p-6" data-question-id="q3">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex space-x-2">
+                                <span class="text-xs bg-primary bg-opacity-20 text-primary px-2 py-1 rounded">判断题</span>
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">合同法</span>
+                                <span class="text-xs bg-green-500 bg-opacity-20 text-green-400 px-2 py-1 rounded">入门</span>
+                            </div>
+                            <span class="text-xs text-text-secondary">已完成</span>
+                        </div>
+                        <h4 class="font-semibold text-primary mb-3">合同一旦签订就不能变更或解除？</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">
+                                <i class="fas fa-times-circle text-red-400 mr-1"></i>答错了
+                            </span>
+                            <span class="text-xs text-text-secondary">难度: ★☆☆</span>
+                        </div>
+                    </div>
+
+                    <!-- 题目卡片4 -->
+                    <div class="question-card glass-card rounded-xl p-6" data-question-id="q4">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex space-x-2">
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">单选题</span>
+                                <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">消费者权益</span>
+                                <span class="text-xs bg-red-500 bg-opacity-20 text-red-400 px-2 py-1 rounded">专家</span>
+                            </div>
+                            <span class="text-xs text-text-secondary">未完成</span>
+                        </div>
+                        <h4 class="font-semibold text-primary mb-3">消费者在购买商品时享有哪些基本权利？</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">
+                                <i class="fas fa-clock text-text-secondary mr-1"></i>待答题
+                            </span>
+                            <span class="text-xs text-text-secondary">难度: ★★★</span>
+                        </div>
+                    </div>
+
+                    <!-- 题目卡片5 -->
+                    <div class="question-card glass-card rounded-xl p-6" data-question-id="q5">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex space-x-2">
+                                <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">多选题</span>
+                                <span class="text-xs bg-primary bg-opacity-20 text-primary px-2 py-1 rounded">刑法</span>
+                                <span class="text-xs bg-yellow-500 bg-opacity-20 text-yellow-400 px-2 py-1 rounded">进阶</span>
+                            </div>
+                            <span class="text-xs text-text-secondary">已完成</span>
+                        </div>
+                        <h4 class="font-semibold text-primary mb-3">下列哪些行为可能构成犯罪？</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">
+                                <i class="fas fa-check-circle text-green-400 mr-1"></i>已答对
+                            </span>
+                            <span class="text-xs text-text-secondary">难度: ★★☆</span>
+                        </div>
+                    </div>
+
+                    <!-- 题目卡片6 -->
+                    <div class="question-card glass-card rounded-xl p-6" data-question-id="q6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex space-x-2">
+                                <span class="text-xs bg-primary bg-opacity-20 text-primary px-2 py-1 rounded">判断题</span>
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">劳动法</span>
+                                <span class="text-xs bg-green-500 bg-opacity-20 text-green-400 px-2 py-1 rounded">入门</span>
+                            </div>
+                            <span class="text-xs text-text-secondary">未完成</span>
+                        </div>
+                        <h4 class="font-semibold text-primary mb-3">用人单位可以随意解除劳动合同？</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">
+                                <i class="fas fa-clock text-text-secondary mr-1"></i>待答题
+                            </span>
+                            <span class="text-xs text-text-secondary">难度: ★☆☆</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 答题区域 -->
+            <section id="answer-area" class="glass-card rounded-xl p-6 mb-8 hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-primary">答题</h3>
+                    <button id="close-answer" class="text-text-secondary hover:text-primary transition-colors">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                
+                <div id="question-content" class="mb-6">
+                    <h4 class="text-lg font-semibold text-primary mb-4">题目内容将在这里显示</h4>
+                    <div class="flex space-x-2 mb-4">
+                        <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">题目类型</span>
+                        <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">知识点</span>
+                        <span class="text-xs bg-green-500 bg-opacity-20 text-green-400 px-2 py-1 rounded">难度</span>
+                    </div>
+                </div>
+                
+                <div id="options-container" class="space-y-3 mb-6">
+                    <!-- 选项将动态生成 -->
+                </div>
+                
+                <div id="answer-actions" class="flex justify-center space-x-4">
+                    <button id="submit-answer" class="px-6 py-2 bg-gradient-to-r from-secondary to-accent text-white rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        提交答案
+                    </button>
+                    <button id="show-explanation" class="px-6 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all hidden">
+                        查看解析
+                    </button>
+                    <button id="next-question" class="px-6 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all hidden">
+                        下一题
+                    </button>
+                </div>
+                
+                <div id="explanation" class="mt-6 p-4 bg-dark-card rounded-lg hidden">
+                    <h5 class="font-semibold text-primary mb-2">解析：</h5>
+                    <p class="text-text-secondary" id="explanation-text">解析内容将在这里显示</p>
+                </div>
+            </section>
+
+            <!-- 分页区域 -->
+            <section id="pagination" class="flex items-center justify-between">
+                <div class="text-sm text-text-secondary">
+                    显示 1-6 条，共 1,247 条记录
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button class="px-3 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="px-3 py-2 bg-secondary text-white rounded-lg">1</button>
+                    <button class="px-3 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all">2</button>
+                    <button class="px-3 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all">3</button>
+                    <span class="px-3 py-2 text-text-secondary">...</span>
+                    <button class="px-3 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all">208</button>
+                    <button class="px-3 py-2 bg-glass-bg border border-glass-border text-text-primary rounded-lg hover:border-secondary transition-all">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟题目数据
+            const questionsData = {
+                q1: {
+                    id: 'q1',
+                    type: 'single',
+                    typeText: '单选题',
+                    knowledge: '劳动法',
+                    difficulty: 'easy',
+                    difficultyText: '入门',
+                    difficultyStars: '★☆☆',
+                    question: '劳动合同的试用期最长不得超过几个月？',
+                    options: ['1个月', '3个月', '6个月', '12个月'],
+                    correctAnswer: '6个月',
+                    explanation: '根据《劳动合同法》第十九条规定，劳动合同期限三个月以上不满一年的，试用期不得超过一个月；劳动合同期限一年以上不满三年的，试用期不得超过二个月；三年以上固定期限和无固定期限的劳动合同，试用期不得超过六个月。',
+                    status: 'completed',
+                    isCorrect: true
+                },
+                q2: {
+                    id: 'q2',
+                    type: 'multiple',
+                    typeText: '多选题',
+                    knowledge: '婚姻法',
+                    difficulty: 'medium',
+                    difficultyText: '进阶',
+                    difficultyStars: '★★☆',
+                    question: '下列哪些情形属于夫妻共同财产？',
+                    options: ['工资、奖金', '一方婚前财产', '知识产权收益', '继承或赠与所得财产'],
+                    correctAnswer: ['工资、奖金', '知识产权收益', '继承或赠与所得财产'],
+                    explanation: '根据《婚姻法》第十七条规定，夫妻在婚姻关系存续期间所得的下列财产，归夫妻共同所有：(一)工资、奖金；(二)生产、经营的收益；(三)知识产权的收益；(四)继承或赠与所得的财产，但本法第十八条第三项规定的除外；(五)其他应当归共同所有的财产。',
+                    status: 'pending',
+                    isCorrect: null
+                },
+                q3: {
+                    id: 'q3',
+                    type: 'judgment',
+                    typeText: '判断题',
+                    knowledge: '合同法',
+                    difficulty: 'easy',
+                    difficultyText: '入门',
+                    difficultyStars: '★☆☆',
+                    question: '合同一旦签订就不能变更或解除？',
+                    options: ['正确', '错误'],
+                    correctAnswer: '错误',
+                    explanation: '根据《合同法》规定，当事人协商一致，可以变更合同。在一定条件下，合同也可以解除，如因不可抗力致使不能实现合同目的，或者一方当事人违约等情形。',
+                    status: 'completed',
+                    isCorrect: false
+                },
+                q4: {
+                    id: 'q4',
+                    type: 'single',
+                    typeText: '单选题',
+                    knowledge: '消费者权益',
+                    difficulty: 'hard',
+                    difficultyText: '专家',
+                    difficultyStars: '★★★',
+                    question: '消费者在购买商品时享有哪些基本权利？',
+                    options: ['安全权', '知情权', '选择权', '以上都是'],
+                    correctAnswer: '以上都是',
+                    explanation: '消费者享有多项基本权利，包括安全权、知情权、选择权、公平交易权、索赔权、结社权、获取知识权、受尊重权和监督权等。',
+                    status: 'pending',
+                    isCorrect: null
+                },
+                q5: {
+                    id: 'q5',
+                    type: 'multiple',
+                    typeText: '多选题',
+                    knowledge: '刑法',
+                    difficulty: 'medium',
+                    difficultyText: '进阶',
+                    difficultyStars: '★★☆',
+                    question: '下列哪些行为可能构成犯罪？',
+                    options: ['故意杀人', '盗窃', '诈骗', '超速驾驶'],
+                    correctAnswer: ['故意杀人', '盗窃', '诈骗'],
+                    explanation: '故意杀人、盗窃、诈骗均属于刑法规定的犯罪行为。超速驾驶在情节严重时可能构成危险驾驶罪，但一般超速属于行政违法行为。',
+                    status: 'completed',
+                    isCorrect: true
+                },
+                q6: {
+                    id: 'q6',
+                    type: 'judgment',
+                    typeText: '判断题',
+                    knowledge: '劳动法',
+                    difficulty: 'easy',
+                    difficultyText: '入门',
+                    difficultyStars: '★☆☆',
+                    question: '用人单位可以随意解除劳动合同？',
+                    options: ['正确', '错误'],
+                    correctAnswer: '错误',
+                    explanation: '用人单位解除劳动合同必须符合《劳动合同法》规定的条件和程序，不能随意解除。违法解除劳动合同的，应当向劳动者支付赔偿金。',
+                    status: 'pending',
+                    isCorrect: null
+                }
+            };
+
+            let currentQuestion = null;
+            let userAnswers = {};
+            let challengeMode = false;
+            let challengeProgress = 0;
+            let challengeScore = 0;
+
+            // 解析URL参数
+            function getUrlParams() {
+                const params = {};
+                const queryString = window.location.search.substring(1);
+                const urlParams = new URLSearchParams(queryString);
+                
+                for(const [key, value] of urlParams.entries()) {
+                    params[key] = value;
+                }
+                return params;
+            }
+
+            // 初始化页面
+            function initializePage() {
+                const params = getUrlParams();
+                
+                if(params.questionId) {
+                    showQuestion(params.questionId);
+                }
+                
+                if(params.challengeMode === 'true') {
+                    startChallengeMode();
+                }
+            }
+
+            // 显示题目
+            function showQuestion(questionId) {
+                const question = questionsData[questionId];
+                if (!question) return;
+
+                currentQuestion = question;
+                
+                // 更新题目内容
+                document.querySelector('#question-content h4').textContent = question.question;
+                document.querySelector('#question-content .space-x-2').innerHTML = `
+                    <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">${question.typeText}</span>
+                    <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">${question.knowledge}</span>
+                    <span class="text-xs bg-green-500 bg-opacity-20 text-green-400 px-2 py-1 rounded">${question.difficultyText}</span>
+                `;
+
+                // 生成选项
+                const optionsContainer = document.querySelector('#options-container');
+                optionsContainer.innerHTML = '';
+                
+                question.options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option-card p-4 bg-dark-card rounded-lg border-2 border-transparent';
+                    optionElement.dataset.option = option;
+                    optionElement.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="w-6 h-6 rounded-full bg-glass-bg text-text-secondary flex items-center justify-center text-sm mr-3">
+                                ${question.type === 'judgment' ? (index === 0 ? '√' : '×') : String.fromCharCode(65 + index)}
+                            </span>
+                            <span class="text-text-primary">${option}</span>
+                        </div>
+                    `;
+                    
+                    optionElement.addEventListener('click', function() {
+                        selectOption(this, question.type);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+
+                // 重置按钮状态
+                document.querySelector('#submit-answer').disabled = true;
+                document.querySelector('#show-explanation').classList.add('hidden');
+                document.querySelector('#next-question').classList.add('hidden');
+                document.querySelector('#explanation').classList.add('hidden');
+
+                // 显示答题区域
+                document.querySelector('#answer-area').classList.remove('hidden');
+                document.querySelector('#answer-area').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // 选择选项
+            function selectOption(optionElement, questionType) {
+                const options = document.querySelectorAll('.option-card');
+                
+                if (questionType === 'single' || questionType === 'judgment') {
+                    // 单选题和判断题：单选
+                    options.forEach(opt => opt.classList.remove('option-selected'));
+                    optionElement.classList.add('option-selected');
+                } else {
+                    // 多选题：多选
+                    optionElement.classList.toggle('option-selected');
+                }
+
+                // 检查是否有选项被选中
+                const selectedOptions = document.querySelectorAll('.option-selected');
+                document.querySelector('#submit-answer').disabled = selectedOptions.length === 0;
+            }
+
+            // 提交答案
+            function submitAnswer() {
+                if (!currentQuestion) return;
+
+                const selectedOptions = Array.from(document.querySelectorAll('.option-selected'))
+                    .map(opt => opt.dataset.option);
+
+                let isCorrect = false;
+                
+                if (currentQuestion.type === 'single' || currentQuestion.type === 'judgment') {
+                    isCorrect = selectedOptions.length === 1 && selectedOptions[0] === currentQuestion.correctAnswer;
+                } else {
+                    // 多选题：检查所有选项是否匹配
+                    isCorrect = selectedOptions.length === currentQuestion.correctAnswer.length &&
+                        selectedOptions.every(option => currentQuestion.correctAnswer.includes(option));
+                }
+
+                // 更新题目状态
+                currentQuestion.status = 'completed';
+                currentQuestion.isCorrect = isCorrect;
+
+                // 显示正确/错误状态
+                showAnswerResult(isCorrect);
+
+                // 更新挑战模式进度
+                if (challengeMode) {
+                    challengeProgress++;
+                    if (isCorrect) challengeScore++;
+                    updateChallengeProgress();
+                }
+
+                // 启用查看解析按钮
+                document.querySelector('#show-explanation').classList.remove('hidden');
+                document.querySelector('#submit-answer').disabled = true;
+            }
+
+            // 显示答案结果
+            function showAnswerResult(isCorrect) {
+                const options = document.querySelectorAll('.option-card');
+                
+                options.forEach(option => {
+                    const optionValue = option.dataset.option;
+                    
+                    if (currentQuestion.correctAnswer.includes(optionValue) || 
+                        (currentQuestion.type !== 'multiple' && optionValue === currentQuestion.correctAnswer)) {
+                        option.classList.add('option-correct');
+                    } else if (option.classList.contains('option-selected')) {
+                        option.classList.add('option-incorrect');
+                    }
+                    
+                    option.style.pointerEvents = 'none';
+                });
+            }
+
+            // 查看解析
+            function showExplanation() {
+                document.querySelector('#explanation-text').textContent = currentQuestion.explanation;
+                document.querySelector('#explanation').classList.remove('hidden');
+                document.querySelector('#show-explanation').classList.add('hidden');
+                document.querySelector('#next-question').classList.remove('hidden');
+            }
+
+            // 下一题
+            function nextQuestion() {
+                document.querySelector('#answer-area').classList.add('hidden');
+                
+                if (challengeMode && challengeProgress < 10) {
+                    // 挑战模式：继续下一题
+                    const questionIds = Object.keys(questionsData);
+                    const randomQuestionId = questionIds[Math.floor(Math.random() * questionIds.length)];
+                    showQuestion(randomQuestionId);
+                } else if (challengeMode) {
+                    // 挑战模式完成
+                    completeChallenge();
+                } else {
+                    // 普通模式：返回题目列表
+                    document.querySelector('#questions-list').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+
+            // 开始挑战模式
+            function startChallengeMode() {
+                challengeMode = true;
+                challengeProgress = 0;
+                challengeScore = 0;
+                
+                document.querySelector('#questions-list').classList.add('hidden');
+                document.querySelector('#challenge-mode').classList.remove('hidden');
+                document.querySelector('#pagination').classList.add('hidden');
+            }
+
+            // 更新挑战进度
+            function updateChallengeProgress() {
+                document.querySelector('#challenge-mode .text-2xl:nth-child(1)').textContent = challengeProgress;
+                document.querySelector('#challenge-mode .text-2xl:nth-child(3)').textContent = 
+                    challengeProgress > 0 ? Math.round((challengeScore / challengeProgress) * 100) + '%' : '0';
+
+                if (challengeProgress >= 10) {
+                    completeChallenge();
+                }
+            }
+
+            // 完成挑战
+            function completeChallenge() {
+                challengeMode = false;
+                alert(`挑战完成！得分：${challengeScore}/10`);
+                
+                // 返回普通模式
+                document.querySelector('#challenge-mode').classList.add('hidden');
+                document.querySelector('#questions-list').classList.remove('hidden');
+                document.querySelector('#pagination').classList.remove('hidden');
+            }
+
+            // 事件监听器
+            document.querySelector('#start-challenge-btn').addEventListener('click', function() {
+                startChallengeMode();
+            });
+
+            document.querySelector('#start-challenge-confirm').addEventListener('click', function() {
+                const questionIds = Object.keys(questionsData);
+                const randomQuestionId = questionIds[Math.floor(Math.random() * questionIds.length)];
+                showQuestion(randomQuestionId);
+                document.querySelector('#challenge-mode').classList.add('hidden');
+            });
+
+            document.querySelector('#exit-challenge').addEventListener('click', function() {
+                challengeMode = false;
+                document.querySelector('#challenge-mode').classList.add('hidden');
+                document.querySelector('#questions-list').classList.remove('hidden');
+                document.querySelector('#pagination').classList.remove('hidden');
+            });
+
+            document.querySelector('#submit-answer').addEventListener('click', submitAnswer);
+            document.querySelector('#show-explanation').addEventListener('click', showExplanation);
+            document.querySelector('#next-question').addEventListener('click', nextQuestion);
+            document.querySelector('#close-answer').addEventListener('click', function() {
+                document.querySelector('#answer-area').classList.add('hidden');
+            });
+
+            // 题目卡片点击事件
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const questionId = this.dataset.questionId;
+                    showQuestion(questionId);
+                });
+            });
+
+            // 筛选功能
+            document.querySelector('#question-type-filter').addEventListener('change', function() {
+                filterQuestions();
+            });
+
+            document.querySelector('#knowledge-filter').addEventListener('change', function() {
+                filterQuestions();
+            });
+
+            document.querySelector('#difficulty-filter').addEventListener('change', function() {
+                filterQuestions();
+            });
+
+            // 筛选题目
+            function filterQuestions() {
+                const typeFilter = document.querySelector('#question-type-filter').value;
+                const knowledgeFilter = document.querySelector('#knowledge-filter').value;
+                const difficultyFilter = document.querySelector('#difficulty-filter').value;
+
+                document.querySelectorAll('.question-card').forEach(card => {
+                    const questionId = card.dataset.questionId;
+                    const question = questionsData[questionId];
+                    
+                    let showCard = true;
+                    
+                    if (typeFilter && question.type !== typeFilter) showCard = false;
+                    if (knowledgeFilter && question.knowledge !== knowledgeFilter) showCard = false;
+                    if (difficultyFilter && question.difficulty !== difficultyFilter) showCard = false;
+                    
+                    card.style.display = showCard ? 'block' : 'none';
+                });
+            }
+
+            // 搜索功能
+            document.querySelector('#global-search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+                    }
+                }
+            });
+
+            // 导航功能
+            document.querySelector('#user-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            // 初始化页面
+            initializePage();
+        });
+    </script>
+</body>
+</html>
