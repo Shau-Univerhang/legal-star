@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/copy-appui.js && next build",
-    "postbuild": "node scripts/copy-appui.js",
-    "copy:appui": "node scripts/copy-appui.js",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },

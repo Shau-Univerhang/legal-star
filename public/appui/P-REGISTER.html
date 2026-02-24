@@ -509,34 +509,27 @@
                 registerBtn.disabled = true;
                 registerBtn.textContent = '注册中...';
                 
-                fetch('/api/auth/verify-code', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: inputValue, token: verificationCodeValue })
-                }).then(function(res) {
-                    return res.json().then(function(data) {
-                        if (!res.ok) throw new Error(data.error || '验证码校验失败');
-                        return data;
-                    });
-                }).then(function() {
-                    if (window.auth) {
-                        return window.auth.register(inputValue, passwordValue);
-                    } else {
-                        throw new Error('Auth module not loaded');
-                    }
-                }).then(function(data) {
-                    if (data.requireConfirmation) {
-                        alert('注册成功！请检查您的邮箱以确认账号。');
-                        window.location.href = 'P-LOGIN.html';
-                    } else {
-                        alert('注册成功！已自动登录。');
-                        window.location.href = 'P-HOME.html';
-                    }
-                }).catch(function(err) {
-                    alert(err.message || '注册失败');
+                if (window.auth) {
+                    window.auth.register(inputValue, passwordValue, null, verificationCodeValue)
+                        .then(function(data) {
+                            if (data.requireConfirmation) {
+                                alert('注册成功！请检查您的邮箱以确认账号。');
+                                window.location.href = 'P-LOGIN.html';
+                            } else {
+                                alert('注册成功！已自动登录。');
+                                window.location.href = 'P-HOME.html';
+                            }
+                        })
+                        .catch(function(err) {
+                            alert('注册失败: ' + err.message);
+                            registerBtn.disabled = false;
+                            registerBtn.textContent = originalText;
+                        });
+                } else {
+                    alert('Auth module not loaded. Please ensure api.js is included.');
                     registerBtn.disabled = false;
                     registerBtn.textContent = originalText;
-                });
+                }
             });
 
             // 登录链接点击

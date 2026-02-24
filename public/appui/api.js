@@ -95,17 +95,18 @@ window.auth = {
   },
 
   /**
-   * Register with email and password
+   * Register with email, password and verification code
    * @param {string} email
    * @param {string} password
    * @param {string} [username]
+   * @param {string} code
    * @returns {Promise<{ user: Object, session: Object, requireConfirmation: boolean }>}
    */
-  register: function(email, password, username) {
+  register: function(email, password, username, code) {
     return fetch(apiUrl('/api/auth/register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: password, username: username })
+      body: JSON.stringify({ email: email, password: password, username: username, code: code })
     }).then(function(res) {
       return res.json().then(function(data) {
         if (!res.ok) throw new Error(data.error || 'Registration failed');
