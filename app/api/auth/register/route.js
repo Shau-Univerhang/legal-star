@@ -10,10 +10,19 @@ export async function POST(request) {
       return Response.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
+    const supabaseAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
 
     // Sign up with Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseAuth.auth.signUp({
       email,
       password,
       options: {
@@ -51,7 +60,7 @@ export async function POST(request) {
 
         if (!updateError) {
            // If confirmed, try to sign in to get a session immediately (simulating auto-login)
-           const { data: signInData } = await supabase.auth.signInWithPassword({
+           const { data: signInData } = await supabaseAuth.auth.signInWithPassword({
              email,
              password
            });
@@ -67,6 +76,7 @@ export async function POST(request) {
 
     // Create a user entry in the leaderboard table for this new user
     if (data.user) {
+        const supabase = getSupabase();
         const { error: dbError } = await supabase
             .from('leaderboard')
             .insert([

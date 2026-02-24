@@ -122,7 +122,7 @@
                 </div>
 
                 <!-- 登录方式切换 -->
-                <div id="login-method-tabs" class="flex mb-6 bg-dark-card rounded-lg p-1">
+                <div id="login-method-tabs" class="flex mb-6 bg-dark-card rounded-lg p-1 hidden">
                     <button id="tab-password" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-active" role="tab">
                         密码登录
                     </button>
@@ -134,23 +134,14 @@
                 <!-- 登录表单 -->
                 <form id="login-form" class="space-y-6">
                     <!-- 登录方式选择 -->
-                    <div id="login-type-selector" class="flex space-x-2 mb-6">
-                        <button type="button" id="type-phone" class="flex-1 py-2 px-3 text-sm border border-glass-border rounded-lg bg-secondary bg-opacity-20 text-primary">
-                            <i class="fas fa-mobile-alt mr-2"></i>手机号
-                        </button>
-                        <button type="button" id="type-email" class="flex-1 py-2 px-3 text-sm border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary">
-                            <i class="fas fa-envelope mr-2"></i>邮箱
-                        </button>
-                    </div>
+                    <div id="login-type-selector" class="flex space-x-2 mb-6 hidden"></div>
 
                     <!-- 手机号/邮箱输入框 -->
                     <div id="account-input-group" class="space-y-2">
-                        <label for="account-input" class="block text-sm font-medium text-text-secondary">
-                            <span id="account-label">手机号</span>
-                        </label>
-                        <input type="text" id="account-input" name="account" 
+                        <label for="account-input" class="block text-sm font-medium text-text-secondary">邮箱</label>
+                        <input type="email" id="account-input" name="account" 
                                class="w-full px-4 py-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary form-input-focus transition-all"
-                               placeholder="请输入手机号" required>
+                               placeholder="请输入邮箱地址" required>
                     </div>
 
                     <!-- 密码输入框（密码登录时显示） -->
@@ -194,14 +185,10 @@
                 </form>
 
                 <!-- 分割线 -->
-                <div id="divider" class="my-8 flex items-center">
-                    <div class="flex-1 border-t border-dark-border"></div>
-                    <span class="px-4 text-sm text-text-secondary">或</span>
-                    <div class="flex-1 border-t border-dark-border"></div>
-                </div>
+                <div id="divider" class="my-6"></div>
 
                 <!-- 第三方登录 -->
-                <div id="social-login" class="space-y-4">
+                <div id="social-login" class="space-y-4 hidden">
                     <div class="text-center text-sm text-text-secondary mb-4">使用第三方账号登录</div>
                     <div class="flex justify-center space-x-4">
                         <button id="wechat-login" class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white social-btn">
@@ -241,7 +228,7 @@
             const codeGroup = document.querySelector('#code-input-group');
             const forgotPasswordSection = document.querySelector('#forgot-password-section');
 
-            tabPassword.addEventListener('click', function() {
+            if (tabPassword) tabPassword.addEventListener('click', function() {
                 // 切换标签样式
                 tabPassword.classList.remove('tab-inactive');
                 tabPassword.classList.add('tab-active');
@@ -257,7 +244,7 @@
                 document.querySelector('#get-code-btn').classList.add('hidden');
             });
 
-            tabCode.addEventListener('click', function() {
+            if (tabCode) tabCode.addEventListener('click', function() {
                 // 切换标签样式
                 tabCode.classList.remove('tab-inactive');
                 tabCode.classList.add('tab-active');
@@ -279,7 +266,7 @@
             const accountLabel = document.querySelector('#account-label');
             const accountInput = document.querySelector('#account-input');
 
-            typePhone.addEventListener('click', function() {
+            if (typePhone) typePhone.addEventListener('click', function() {
                 // 切换按钮样式
                 typePhone.classList.add('bg-secondary', 'bg-opacity-20', 'text-primary');
                 typePhone.classList.remove('text-text-secondary');
@@ -292,7 +279,7 @@
                 accountInput.type = 'tel';
             });
 
-            typeEmail.addEventListener('click', function() {
+            if (typeEmail) typeEmail.addEventListener('click', function() {
                 // 切换按钮样式
                 typeEmail.classList.add('bg-secondary', 'bg-opacity-20', 'text-primary');
                 typeEmail.classList.remove('text-text-secondary');
@@ -328,7 +315,7 @@
             let countdown = 0;
             const getCodeBtn = document.querySelector('#get-code-btn');
 
-            getCodeBtn.addEventListener('click', function() {
+            if (getCodeBtn) getCodeBtn.addEventListener('click', function() {
                 const account = accountInput.value.trim();
                 
                 if (!account) {
@@ -448,12 +435,12 @@
             });
 
             // 第三方登录
-            document.querySelector('#wechat-login').addEventListener('click', function() {
+            if (document.querySelector('#wechat-login')) document.querySelector('#wechat-login').addEventListener('click', function() {
                 console.log('微信登录功能开发中...');
                 alert('微信登录功能开发中...');
             });
 
-            document.querySelector('#qq-login').addEventListener('click', function() {
+            if (document.querySelector('#qq-login')) document.querySelector('#qq-login').addEventListener('click', function() {
                 console.log('QQ登录功能开发中...');
                 alert('QQ登录功能开发中...');
             });

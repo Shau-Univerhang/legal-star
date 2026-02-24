@@ -26,7 +26,7 @@
     - `P-RANKING.html`：排行榜页
     - 以及用户中心、问答、知识图谱等其他页面
   - `api.js`：前端调用后端 API 的统一封装
-- `lib/supabase.js`：服务端 Supabase 客户端封装
+- `lib/supabase.js`：服务端 Supabase 客户端封装（业务读写用 service role / anon 分工）
 - `supabase/schema.sql`：Supabase 数据库建表脚本（`cases`、`videos`、`leaderboard`）
 - `.env.local.example`：环境变量示例
 - `next.config.js`、`package.json`：Next.js 项目配置
@@ -108,7 +108,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=你的_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=你的_supabase_service_role_key
 ```
 
-这些变量会被 `lib/supabase.js` 使用，用来创建 Supabase 客户端。
+这些变量会被后端 API 使用：
+- 认证（Auth）使用 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- 业务表读写（如写入 leaderboard）使用 `SUPABASE_SERVICE_ROLE_KEY`（服务端使用，勿泄露）
 
 ---
 
@@ -141,6 +143,31 @@ SUPABASE_SERVICE_ROLE_KEY=你的_supabase_service_role_key
   - `window.fetchCaseById(id)`：获取单个案例详情（含视频列表）
   - `window.fetchVideos(caseId?)`：获取视频列表（可以按 `caseId` 过滤）
   - `window.fetchLeaderboard(opts)`：获取排行榜
+  - `window.auth.login(email, password)`：邮箱+密码登录
+  - `window.auth.register(email, password, username?)`：邮箱注册（结合验证码流程）
+
+---
+
+## 认证与用户
+
+- 登录：`POST /api/auth/login`
+  - 请求体：`{ email, password }`
+  - 返回：`{ user, session }`
+
+- 注册：`POST /api/auth/register`
+  - 请求体：`{ email, password, username? }`
+  - 开发环境中若配置了 `SUPABASE_SERVICE_ROLE_KEY` 会自动完成邮箱确认并返回 `session`
+  - 返回：`{ user, session, requireConfirmation }`
+
+- 邮箱验证码（OTP）：
+  - 发送验证码：`POST /api/auth/send-code`，请求体 `{ email }`
+  - 校验验证码：`POST /api/auth/verify-code`，请求体 `{ email, token }`
+  - 前端注册页流程：先“获取验证码”并校验通过，再提交注册
+  - 当前注册与登录均仅支持邮箱，不支持手机号
+
+安全提示：
+- 切勿把 `SUPABASE_SERVICE_ROLE_KEY` 写入前端或提交到公共仓库
+- 生产环境部署时在平台（如 Vercel）配置环境变量
 
 ---
 
@@ -148,13 +175,14 @@ SUPABASE_SERVICE_ROLE_KEY=你的_supabase_service_role_key
 
 ### 方式 A：与 API 同站点托管（推荐开发模式）
 
-1. 将 `appui` 目录复制/移动到 `public/appui`：
-   - 目标路径：`public/appui`
-   - `public/` 是 Next.js 默认静态目录（若不存在，可自行新建）。
+1. 构建时会自动将 `appui/appui` 复制到 `public/appui`（脚本见 `scripts/copy-appui.js`）
+   - 开发阶段也可手动执行：`npm run copy:appui`
 2. 启动开发服务器后，直接访问：
    - `http://localhost:3000/appui/P-HOME.html`（首页）
    - `http://localhost:3000/appui/P-CASE_LIST.html`（案例列表）
    - `http://localhost:3000/appui/P-RANKING.html`（排行榜）
+   - `http://localhost:3000/appui/P-LOGIN.html`（邮箱登录）
+   - `http://localhost:3000/appui/P-REGISTER.html`（邮箱+验证码注册）
 
 由于静态页面和 API 在同一域名下，`window.API_BASE` 默认为空，就可以直接请求 `/api/...`。
 
@@ -189,10 +217,15 @@ npm run dev
   - `GET http://localhost:3000/api/cases/case-001` – 某个 id 或 `slug` 的案例详情
   - `GET http://localhost:3000/api/videos` – 视频列表
   - `GET http://localhost:3000/api/leaderboard` – 排行榜
+- 认证接口：
+  - `POST http://localhost:3000/api/auth/send-code` – 发送邮箱验证码
+  - `POST http://localhost:3000/api/auth/verify-code` – 校验邮箱验证码
+  - `POST http://localhost:3000/api/auth/register` – 邮箱注册（仅邮箱）
+  - `POST http://localhost:3000/api/auth/login` – 邮箱登录（密码）
 - 前端页面（按「方式 A」复制到 `public/` 后）：
   - `http://localhost:3000/appui/P-HOME.html`
   - `http://localhost:3000/appui/P-CASE_LIST.html`
-  - 以及其他页面路径
+  - 以及其他页面路径（含 `P-LOGIN.html`, `P-REGISTER.html`）
 
 ---
 
@@ -272,4 +305,4 @@ npm run dev
 
 ## 说明
 
-UI 和样式全部来自 `appui/appui` 下的静态文件，本项目只负责提供数据 API 与最少量的集成代码。你可以专注于在 Supabase 中维护案例库和视频资源，而无需频繁修改前端 HTML。
+UI 和样式全部来自 `appui/appui` 下的静态文件；构建脚本会复制到 `public/appui` 以便统一托管。本项目提供数据 API 与认证能力（邮箱+密码、邮箱验证码），你可以在 Supabase 中维护案例库、视频资源和用户数据，而无需频繁修改前端 HTML。
