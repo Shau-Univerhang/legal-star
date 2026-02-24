@@ -163,11 +163,16 @@ SUPABASE_SERVICE_ROLE_KEY=你的_supabase_service_role_key
   - 发送验证码：`POST /api/auth/send-code`，请求体 `{ email }`
   - 校验验证码：`POST /api/auth/verify-code`，请求体 `{ email, token }`
   - 前端注册页流程：先“获取验证码”并校验通过，再提交注册
+  - **注意**：建议在 Supabase 后台配置自定义 SMTP（如 Resend）以避免邮件发送速率限制，并确保验证码模版配置正确（使用 `{{ .Token }}`）。
   - 当前注册与登录均仅支持邮箱，不支持手机号
 
 安全提示：
 - 切勿把 `SUPABASE_SERVICE_ROLE_KEY` 写入前端或提交到公共仓库
 - 生产环境部署时在平台（如 Vercel）配置环境变量
+
+## 更新日志
+
+查看 [CHANGELOG.md](./CHANGELOG.md) 获取最新更新详情。
 
 ---
 
