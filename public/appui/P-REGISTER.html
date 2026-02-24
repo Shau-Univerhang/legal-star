@@ -152,28 +152,14 @@
                 </div>
 
                 <!-- 注册方式切换 -->
-                <div id="register-type-tabs" class="flex mb-6 bg-dark-card rounded-lg p-1">
-                    <button id="tab-phone" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-active" role="tab">
-                        手机号注册
-                    </button>
-                    <button id="tab-email" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-inactive" role="tab">
-                        邮箱注册
-                    </button>
-                </div>
+                <div id="register-type-tabs" class="flex mb-6 bg-dark-card rounded-lg p-1 hidden"></div>
 
                 <!-- 注册表单 -->
                 <form id="register-form" class="space-y-4">
-                    <!-- 手机号输入框 -->
-                    <div id="phone-input-group" class="space-y-2">
-                        <label for="phone" class="block text-sm font-medium text-text-primary">手机号</label>
-                        <input type="tel" id="phone" name="phone" 
-                               class="w-full px-4 py-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary form-input-focus transition-all"
-                               placeholder="请输入手机号" maxlength="11">
-                        <div id="phone-error" class="error-message hidden">请输入正确的手机号</div>
-                    </div>
+                    <!-- 手机号输入框已移除 -->
 
                     <!-- 邮箱输入框 -->
-                    <div id="email-input-group" class="space-y-2 hidden">
+                    <div id="email-input-group" class="space-y-2">
                         <label for="email" class="block text-sm font-medium text-text-primary">邮箱</label>
                         <input type="email" id="email" name="email" 
                                class="w-full px-4 py-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary form-input-focus transition-all"
@@ -252,13 +238,8 @@
             const phoneInputGroup = document.querySelector('#phone-input-group');
             const emailInputGroup = document.querySelector('#email-input-group');
 
-            phoneTab.addEventListener('click', function() {
-                switchRegisterType('phone');
-            });
-
-            emailTab.addEventListener('click', function() {
-                switchRegisterType('email');
-            });
+            if (emailInputGroup) emailInputGroup.classList.remove('hidden');
+            if (phoneInputGroup) phoneInputGroup.classList.add('hidden');
 
             function switchRegisterType(type) {
                 if (type === 'phone') {
@@ -316,33 +297,36 @@
             let countdownTimer = null;
             let countdown = 0;
 
-            getVerificationCodeBtn.addEventListener('click', function() {
+            if (getVerificationCodeBtn) getVerificationCodeBtn.addEventListener('click', function() {
                 if (countdown > 0) return;
 
-                const currentType = phoneTab.classList.contains('tab-active') ? 'phone' : 'email';
-                const inputValue = currentType === 'phone' 
-                    ? document.querySelector('#phone').value 
-                    : document.querySelector('#email').value;
+                const inputValue = document.querySelector('#email').value;
 
                 if (!inputValue) {
-                    showError(currentType === 'phone' ? 'phone' : 'email', '请先输入' + (currentType === 'phone' ? '手机号' : '邮箱'));
+                    showError('email', '请先输入邮箱');
                     return;
                 }
 
-                if (currentType === 'phone' && !validatePhone(inputValue)) {
-                    showError('phone', '请输入正确的手机号');
-                    return;
-                }
-
-                if (currentType === 'email' && !validateEmail(inputValue)) {
+                if (!validateEmail(inputValue)) {
                     showError('email', '请输入正确的邮箱地址');
                     return;
                 }
 
-                // 模拟发送验证码
-                console.log('发送验证码到：' + inputValue);
+                fetch('/api/auth/send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: inputValue })
+                }).then(function(res) {
+                    return res.json().then(function(data) {
+                        if (!res.ok) throw new Error(data.error || '发送失败');
+                    });
+                }).then(function() {
+                    showSuccess('verification-code', '验证码已发送');
+                }).catch(function(err) {
+                    alert('发送验证码失败: ' + err.message);
+                    return;
+                });
                 startCountdown();
-                showSuccess('verification-code', '验证码已发送');
             });
 
             function startCountdown() {
@@ -427,15 +411,6 @@
             }
 
             // 实时验证
-            const phoneInput = document.querySelector('#phone');
-            phoneInput.addEventListener('blur', function() {
-                if (this.value && !validatePhone(this.value)) {
-                    showError('phone', '请输入正确的手机号');
-                } else {
-                    document.querySelector('#phone-error').classList.add('hidden');
-                    this.classList.remove('border-red-500');
-                }
-            });
 
             const emailInput = document.querySelector('#email');
             emailInput.addEventListener('blur', function() {
@@ -469,7 +444,7 @@
             });
 
             const verificationCodeInput = document.querySelector('#verification-code');
-            verificationCodeInput.addEventListener('blur', function() {
+            if (verificationCodeInput) verificationCodeInput.addEventListener('blur', function() {
                 if (this.value && !validateVerificationCode(this.value)) {
                     showError('verification-code', '请输入6位数字验证码');
                 } else {
@@ -485,22 +460,13 @@
                 
                 clearErrorMessages();
                 
-                const currentType = phoneTab.classList.contains('tab-active') ? 'phone' : 'email';
-                const inputValue = currentType === 'phone' 
-                    ? document.querySelector('#phone').value 
-                    : document.querySelector('#email').value;
+                const inputValue = document.querySelector('#email').value;
                 const passwordValue = document.querySelector('#password').value;
                 const confirmPasswordValue = document.querySelector('#confirm-password').value;
-                // const verificationCodeValue = document.querySelector('#verification-code').value;
+                const verificationCodeValue = document.querySelector('#verification-code').value;
                 
                 let hasError = false;
                 
-                // 验证输入
-                if (currentType === 'phone') {
-                    alert('目前仅支持邮箱注册，请切换到邮箱注册');
-                    return;
-                }
-
                 if (!inputValue) {
                     showError('email', '请输入邮箱地址');
                     hasError = true;
@@ -525,14 +491,13 @@
                     hasError = true;
                 }
                 
-                // Skip verification code check for now as we don't have real SMS/Email code service
-                // if (!verificationCodeValue) {
-                //     showError('verification-code', '请输入验证码');
-                //     hasError = true;
-                // } else if (!validateVerificationCode(verificationCodeValue)) {
-                //     showError('verification-code', '请输入6位数字验证码');
-                //     hasError = true;
-                // }
+                if (!verificationCodeValue) {
+                    showError('verification-code', '请输入验证码');
+                    hasError = true;
+                } else if (!validateVerificationCode(verificationCodeValue)) {
+                    showError('verification-code', '请输入6位数字验证码');
+                    hasError = true;
+                }
                 
                 if (hasError) {
                     return;
@@ -544,27 +509,34 @@
                 registerBtn.disabled = true;
                 registerBtn.textContent = '注册中...';
                 
-                if (window.auth) {
-                    window.auth.register(inputValue, passwordValue)
-                        .then(function(data) {
-                            if (data.requireConfirmation) {
-                                alert('注册成功！请检查您的邮箱以确认账号。');
-                                window.location.href = 'P-LOGIN.html';
-                            } else {
-                                alert('注册成功！已自动登录。');
-                                window.location.href = 'P-HOME.html';
-                            }
-                        })
-                        .catch(function(err) {
-                            alert('注册失败: ' + err.message);
-                            registerBtn.disabled = false;
-                            registerBtn.textContent = originalText;
-                        });
-                } else {
-                    alert('Auth module not loaded. Please ensure api.js is included.');
+                fetch('/api/auth/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: inputValue, token: verificationCodeValue })
+                }).then(function(res) {
+                    return res.json().then(function(data) {
+                        if (!res.ok) throw new Error(data.error || '验证码校验失败');
+                        return data;
+                    });
+                }).then(function() {
+                    if (window.auth) {
+                        return window.auth.register(inputValue, passwordValue);
+                    } else {
+                        throw new Error('Auth module not loaded');
+                    }
+                }).then(function(data) {
+                    if (data.requireConfirmation) {
+                        alert('注册成功！请检查您的邮箱以确认账号。');
+                        window.location.href = 'P-LOGIN.html';
+                    } else {
+                        alert('注册成功！已自动登录。');
+                        window.location.href = 'P-HOME.html';
+                    }
+                }).catch(function(err) {
+                    alert(err.message || '注册失败');
                     registerBtn.disabled = false;
                     registerBtn.textContent = originalText;
-                }
+                });
             });
 
             // 登录链接点击
