@@ -158,13 +158,8 @@
             ></span>
           </button>
 
-          <!-- 用户头像 -->
-          <div
-            id="user-avatar"
-            class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center cursor-pointer hover-glow"
-          >
-            <span class="text-white font-semibold text-sm">学法者</span>
-          </div>
+          <!-- 用户区域 -->
+          <div id="auth-section"></div>
         </div>
       </div>
     </nav>
@@ -360,6 +355,38 @@
     <script src="api.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        // === Auth Logic ===
+        const authSection = document.getElementById("auth-section");
+        
+        if (window.auth && window.auth.isLoggedIn()) {
+            // Logged In
+            const user = window.auth.getUser();
+            const name = user ? (user.user_metadata?.username || (user.email ? user.email.split('@')[0] : '学法者')) : '学法者';
+            
+            authSection.innerHTML = `
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
+                        <span class="text-white font-semibold text-sm">${name}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Logout
+            document.getElementById('user-avatar').addEventListener('click', function() {
+                if (confirm('确定要退出登录吗？')) {
+                    window.auth.logout();
+                }
+            });
+        } else {
+            // Guest
+            authSection.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <a href="P-LOGIN.html" class="px-4 py-2 text-sm text-text-secondary hover:text-primary transition-colors border border-glass-border rounded-lg hover:border-secondary">登录</a>
+                    <a href="P-REGISTER.html" class="px-4 py-2 text-sm bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-colors">注册</a>
+                </div>
+            `;
+        }
+
         const chatMessages = document.getElementById("chat-messages");
         const chatInput = document.getElementById("chat-input");
         const sendBtn = document.getElementById("send-btn");

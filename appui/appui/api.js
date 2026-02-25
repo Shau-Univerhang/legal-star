@@ -98,6 +98,47 @@ window.auth = {
   },
 
   /**
+   * Send verification code (OTP)
+   * @param {string} email
+   * @returns {Promise<{ message: string }>}
+   */
+  sendCode: function(email) {
+    return fetch(apiUrl('/api/auth/send-code'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    }).then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok) throw new Error(data.error || 'Send code failed');
+        return data;
+      });
+    });
+  },
+
+  /**
+   * Login with verification code
+   * @param {string} email
+   * @param {string} code
+   * @returns {Promise<{ user: Object, session: Object }>}
+   */
+  loginWithCode: function(email, code) {
+    return fetch(apiUrl('/api/auth/verify-code'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, token: code })
+    }).then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        if (data.session) {
+          localStorage.setItem('bird_session', JSON.stringify(data.session));
+          localStorage.setItem('bird_user', JSON.stringify(data.user));
+        }
+        return data;
+      });
+    });
+  },
+
+  /**
    * Register with email, password and verification code
    * @param {string} email
    * @param {string} password
