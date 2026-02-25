@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI咨询 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FFE8D6",
+              secondary: "#E67E22",
+              accent: "#34495E",
+              dark: "#1E272E",
+              "dark-card": "#2C3E50",
+              "dark-border": "#3D5A80",
+              "text-primary": "#FFE8D6",
+              "text-secondary": "#B2BEC3",
+              "glass-bg": "rgba(44, 62, 80, 0.85)",
+              "glass-border": "rgba(255, 232, 214, 0.3)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass-card {
+        background: rgba(44, 62, 80, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 232, 214, 0.3);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+        border-radius: 1rem;
+      }
+
+      .glass-nav {
+        background: rgba(30, 39, 46, 0.97);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .glass-sidebar {
+        background: rgba(30, 39, 46, 0.95);
+        backdrop-filter: blur(15px);
+        border-right: 1px solid rgba(255, 232, 214, 0.2);
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #fae9db, #f48224);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .chat-message {
+        max-width: 80%;
+        word-wrap: break-word;
+      }
+
+      .chat-message.user {
+        background: linear-gradient(135deg, #e67e22, #d35400);
+        color: white;
+        border-radius: 1rem 1rem 0.25rem 1rem;
+      }
+
+      .chat-message.ai {
+        background: rgba(44, 62, 80, 0.9);
+        border: 1px solid rgba(255, 232, 214, 0.2);
+        border-radius: 1rem 1rem 1rem 0.25rem;
+      }
+
+      .typing-indicator span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #e67e22;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+        margin: 0 2px;
+      }
+
+      .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typing {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .quick-action-btn {
+        transition: all 0.3s ease;
+      }
+
+      .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+      }
+
+      .chat-input:focus {
+        box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.3);
+      }
+    </style>
+  </head>
+  <body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+      <div class="flex items-center justify-between h-full px-6">
+        <!-- Logo区域 -->
+        <div id="logo-section" class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center"
+          >
+            <i class="fas fa-scale-balanced text-lg text-white"></i>
+          </div>
+          <h1 class="text-xl font-bold gradient-text">法智星</h1>
+        </div>
+
+        <!-- 搜索框和用户区域 -->
+        <div id="user-section" class="flex items-center space-x-4">
+          <!-- 搜索框 -->
+          <div class="relative hidden lg:block">
+            <input
+              type="text"
+              id="global-search"
+              placeholder="搜索案例、知识点..."
+              class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors"
+            />
+            <i
+              class="fas fa-magnifying-glass absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"
+            ></i>
+          </div>
+
+          <!-- 消息通知 -->
+          <button
+            id="notification-btn"
+            class="relative p-2 text-text-secondary hover:text-primary transition-colors"
+          >
+            <i class="fas fa-bell text-xl"></i>
+            <span
+              class="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full"
+            ></span>
+          </button>
+
+          <!-- 用户头像 -->
+          <div
+            id="user-avatar"
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center cursor-pointer hover-glow"
+          >
+            <span class="text-white font-semibold text-sm">学法者</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="flex pt-16 min-h-screen">
+      <!-- 左侧菜单 -->
+      <aside
+        id="sidebar"
+        class="glass-sidebar w-64 min-h-screen p-6 fixed left-0 top-16 bottom-0 overflow-y-auto"
+      >
+        <nav id="sidebar-nav" class="space-y-2">
+          <a
+            href="P-HOME.html"
+            id="nav-home"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-house text-lg"></i>
+            <span>首页</span>
+          </a>
+          <a
+            href="P-CASE_LIST.html"
+            id="nav-cases"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-briefcase text-lg"></i>
+            <span>案例库</span>
+          </a>
+          <a
+            href="P-QUESTION_BANK.html"
+            id="nav-questions"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-circle-question text-lg"></i>
+            <span>题库</span>
+          </a>
+          <a
+            href="P-AI_CHAT.html"
+            id="nav-ai"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md"
+          >
+            <i class="fas fa-eye text-lg"></i>
+            <span>AI咨询</span>
+          </a>
+          <a
+            href="P-KNOWLEDGE_MAP.html"
+            id="nav-knowledge"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-diagram-project text-lg"></i>
+            <span>知识图谱</span>
+          </a>
+          <a
+            href="P-RANKING.html"
+            id="nav-ranking"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-trophy text-lg"></i>
+            <span>排行榜</span>
+          </a>
+
+          <div class="border-t border-dark-border my-4"></div>
+
+          <a
+            href="P-USER_CENTER.html"
+            id="nav-profile"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-user text-lg"></i>
+            <span>个人中心</span>
+          </a>
+          <a
+            href="P-SETTINGS.html"
+            id="nav-settings"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
+          >
+            <i class="fas fa-gear text-lg"></i>
+            <span>设置</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main id="main-content" class="flex-1 ml-64 p-6">
+        <div class="max-w-5xl mx-auto">
+          <!-- 页面标题 -->
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-primary mb-2">
+              <i class="fas fa-eye mr-2 text-secondary"></i>AI法律咨询
+            </h1>
+            <p class="text-text-secondary">
+              智能法律助手，为您提供专业的法律咨询服务
+            </p>
+          </div>
+
+          <!-- 聊天区域 -->
+          <div
+            class="glass-card rounded-xl p-6 shadow-lg flex flex-col"
+            style="height: calc(100vh - 200px)"
+          >
+            <!-- 聊天消息区域 -->
+            <div
+              id="chat-messages"
+              class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2"
+            >
+              <!-- 欢迎消息 -->
+              <div class="flex items-start space-x-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center flex-shrink-0"
+                >
+                  <i class="fas fa-robot text-white text-sm"></i>
+                </div>
+                <div class="chat-message ai p-4">
+                  <p class="text-text-primary">
+                    您好！我是法智星AI法律助手。我可以帮您：
+                  </p>
+                  <ul class="mt-2 space-y-1 text-text-secondary text-sm">
+                    <li>• 解答法律相关问题</li>
+                    <li>• 分析案例和法律条文</li>
+                    <li>• 提供法律建议和指导</li>
+                    <li>• 解释法律术语和概念</li>
+                  </ul>
+                  <p class="mt-3 text-text-primary">
+                    请问有什么可以帮助您的吗？
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 快捷操作按钮 -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button
+                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
+              >
+                <i class="fas fa-briefcase mr-1"></i>劳动纠纷
+              </button>
+              <button
+                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
+              >
+                <i class="fas fa-ring mr-1"></i>婚姻家庭
+              </button>
+              <button
+                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
+              >
+                <i class="fas fa-file-contract mr-1"></i>合同纠纷
+              </button>
+              <button
+                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
+              >
+                <i class="fas fa-shopping-cart mr-1"></i>消费者权益
+              </button>
+              <button
+                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
+              >
+                <i class="fas fa-building mr-1"></i>房产物业
+              </button>
+            </div>
+
+            <!-- 输入区域 -->
+            <div
+              class="flex items-end space-x-3 pt-4 border-t border-dark-border"
+            >
+              <div class="flex-1 relative">
+                <textarea
+                  id="chat-input"
+                  rows="2"
+                  placeholder="请输入您的问题..."
+                  class="chat-input w-full px-4 py-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary resize-none"
+                ></textarea>
+              </div>
+              <button
+                id="send-btn"
+                class="px-6 py-3 bg-gradient-to-r from-secondary to-accent rounded-lg text-white hover:opacity-90 transition-all flex items-center space-x-2"
+              >
+                <i class="fas fa-paper-plane"></i>
+                <span>发送</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 免责声明 -->
+          <div
+            class="mt-4 p-4 bg-glass-bg border border-glass-border rounded-lg"
+          >
+            <p class="text-xs text-text-secondary">
+              <i class="fas fa-info-circle mr-1"></i>
+              免责声明：AI助手的回答仅供参考，不构成正式法律意见。如需专业法律服务，请咨询执业律师。
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const chatMessages = document.getElementById("chat-messages");
+        const chatInput = document.getElementById("chat-input");
+        const sendBtn = document.getElementById("send-btn");
+
+        // 添加消息到聊天区域
+        function addMessage(content, isUser = false) {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = "flex items-start space-x-3";
+
+          if (isUser) {
+            messageDiv.innerHTML = `
+                        <div class="flex-1 flex justify-end">
+                            <div class="chat-message user p-4">
+                                <p>${escapeHtml(content)}</p>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user text-dark text-sm"></i>
+                        </div>
+                    `;
+          } else {
+            messageDiv.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-robot text-white text-sm"></i>
+                        </div>
+                        <div class="chat-message ai p-4">
+                            <p class="text-text-primary">${content}</p>
+                        </div>
+                    `;
+          }
+
+          chatMessages.appendChild(messageDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 显示打字指示器
+        function showTypingIndicator() {
+          const typingDiv = document.createElement("div");
+          typingDiv.id = "typing-indicator";
+          typingDiv.className = "flex items-start space-x-3";
+          typingDiv.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="chat-message ai p-4">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+          chatMessages.appendChild(typingDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 移除打字指示器
+        function hideTypingIndicator() {
+          const indicator = document.getElementById("typing-indicator");
+          if (indicator) {
+            indicator.remove();
+          }
+        }
+
+        // 对话上下文ID
+        let currentConversationId = null;
+
+        // 调用Coze AI获取回复
+        function callCozeAI(userMessage) {
+          showTypingIndicator();
+
+          // 检查是否配置了Coze API
+          if (
+            window.cozeConfig &&
+            window.cozeConfig.botId !== "YOUR_COZE_BOT_ID"
+          ) {
+            // 使用非流式API
+            window.sendToCozeAI(userMessage, currentConversationId)
+              .then(function(result) {
+                hideTypingIndicator();
+                console.log("Coze response:", result);
+                
+                // 保存对话ID
+                if (result.conversationId) {
+                  currentConversationId = result.conversationId;
+                }
+                
+                // 显示AI回复
+                addMessage(result.message, false);
+              })
+              .catch(function(error) {
+                hideTypingIndicator();
+                console.error("Coze API error:", error);
+                addMessage("抱歉，服务暂时不可用，请检查API配置或稍后再试。错误：" + error.message, false);
+              });
+          } else {
+            // 未配置Coze API，使用模拟回复
+            setTimeout(() => {
+              hideTypingIndicator();
+
+              let response = "欢迎使用AI法律咨询服务！\n\n";
+              response += "⚠️ 系统提示：Coze API 尚未配置\n\n";
+              response += "请先配置您的 Coze Bot ID 和 Token：\n";
+              response += "1. 在 Coze 平台创建智能体并发布\n";
+              response += "2. 获取 Bot ID 和个人访问令牌\n";
+              response += "3. 在 api.js 文件中配置 window.cozeConfig\n\n";
+              response += "配置完成后即可使用智能AI咨询服务。";
+
+              addMessage(response, false);
+            }, 1500);
+          }
+        }
+
+        // 发送消息
+        function sendMessage() {
+          const message = chatInput.value.trim();
+          if (!message) return;
+
+          addMessage(message, true);
+          chatInput.value = "";
+
+          callCozeAI(message);
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
+        // 事件监听
+        sendBtn.addEventListener("click", sendMessage);
+
+        chatInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+        // 快捷操作按钮
+        document.querySelectorAll(".quick-action-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const text = this.textContent.trim();
+            chatInput.value = "我想咨询关于" + text + "的问题：";
+            chatInput.focus();
+          });
+        });
+
+        // 搜索框焦点效果
+        const searchInput = document.querySelector("#global-search");
+        searchInput.addEventListener("focus", function () {
+          this.parentElement.classList.add(
+            "ring-2",
+            "ring-secondary",
+            "ring-opacity-50",
+          );
+        });
+        searchInput.addEventListener("blur", function () {
+          this.parentElement.classList.remove(
+            "ring-2",
+            "ring-secondary",
+            "ring-opacity-50",
+          );
+        });
+
+        // 搜索功能
+        searchInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            const keyword = this.value.trim();
+            if (keyword) {
+              window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+            }
+          }
+        });
+
+        // 用户头像点击效果
+        document
+          .querySelector("#user-avatar")
+          .addEventListener("click", function () {
+            window.location.href = "P-USER_CENTER.html";
+          });
+
+        // 通知按钮点击效果
+        document
+          .querySelector("#notification-btn")
+          .addEventListener("click", function () {
+            console.log("显示通知列表");
+          });
+      });
+    </script>
+  </body>
+</html>

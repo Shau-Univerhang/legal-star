@@ -2,10 +2,13 @@
  * API base URL for fetch calls. Use same origin when served from Next.js (e.g. /appui/P-HOME.html).
  * For file:// or different port, set window.API_BASE before loading pages (e.g. API_BASE = 'http://localhost:3000').
  */
-window.API_BASE = window.API_BASE || '';
+// Auto-detect: if served via HTTP/HTTPS (Next.js), use same origin; otherwise (file://) use localhost
+window.API_BASE =
+  window.API_BASE ||
+  (window.location.protocol === "file:" ? "http://localhost:3000" : "");
 
 function apiUrl(path) {
-  return (window.API_BASE + path).replace(/([^:]\/)\/+/g, '$1');
+  return (window.API_BASE + path).replace(/([^:]\/)\/+/g, "$1");
 }
 
 /**
@@ -148,4 +151,231 @@ window.auth = {
   isLoggedIn: function() {
     return !!localStorage.getItem('bird_session');
   }
+};
+
+/**
+ * Coze AI Chat API
+ * Configuration: Set your Coze Bot ID and Token
+ */
+window.cozeConfig = {
+  // 请替换为你的 Coze Bot ID（仅数字部分）
+  botId: "7563991989000781875",
+  // 请替换为你的 Coze 个人访问令牌
+  token: "pat_CCmVzH6W2ZcfhNHjj0zBvP1HORgwx1eyrnO5lkJODqTcCZgYVWu5UgpzzWVH0wML",
+  // Coze API 基础地址
+  baseUrl: "https://api.coze.cn",
+};
+
+/**
+ * Send message to Coze AI and get response
+ * @param {string} message - User message
+ * @param {string} [conversationId] - Optional conversation ID for context
+ * @returns {Promise<{message: string, conversationId: string}>}
+ */
+window.sendToCozeAI = function (message, conversationId) {
+  const url = window.cozeConfig.baseUrl + "/v3/chat";
+
+  const body = {
+    bot_id: window.cozeConfig.botId,
+    user_id: "user_" + Date.now(),
+    additional_messages: [
+      {
+        role: "user",
+        content: message,
+        content_type: "text",
+      },
+    ],
+  };
+
+  if (conversationId) {
+    body.conversation_id = conversationId;
+  }
+
+  console.log("sendToCozeAI request:", url, body);
+
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + window.cozeConfig.token,
+    },
+    body: JSON.stringify(body),
+  })
+    .then(function (res) {
+      console.log("sendToCozeAI response status:", res.status);
+      if (!res.ok) {
+        throw new Error("HTTP error! status: " + res.status);
+      }
+      return res.json();
+    })
+    .then(function (data) {
+      console.log("sendToCozeAI response data:", data);
+
+      if (data.code !== 0) {
+        throw new Error(data.msg || "Coze API error: " + JSON.stringify(data));
+      }
+
+      // 获取 AI 回复 - 处理不同可能的响应格式
+      let aiContent = "抱歉，我没有理解您的问题。";
+      let convId = null;
+
+      if (data.data) {
+        convId = data.data.conversation_id || data.data.id;
+
+        // 尝试从 messages 数组获取
+        if (data.data.messages && data.data.messages.length > 0) {
+          const aiMessage = data.data.messages.find(function (m) {
+            return m.role === "assistant";
+          });
+          if (aiMessage && aiMessage.content) {
+            aiContent = aiMessage.content;
+          }
+        }
+        // 尝试直接获取 content
+        else if (data.data.content) {
+          aiContent = data.data.content;
+        }
+        // 尝试从 answer 获取
+        else if (data.data.answer) {
+          aiContent = data.data.answer;
+        }
+      }
+
+      return {
+        message: aiContent,
+        conversationId: convId,
+      };
+    })
+    .catch(function (err) {
+      console.error("sendToCozeAI error:", err);
+      throw err;
+    });
+};
+
+/**
+ * Stream chat with Coze AI (for real-time response)
+ * @param {string} message - User message
+ * @param {Function} onMessage - Callback for each message chunk
+ * @param {Function} onComplete - Callback when stream completes
+ * @param {string} [conversationId] - Optional conversation ID
+ */
+window.streamCozeAI = function (
+  message,
+  onMessage,
+  onComplete,
+  conversationId,
+) {
+  const url = window.cozeConfig.baseUrl + "/v3/chat";
+
+  const body = {
+    bot_id: window.cozeConfig.botId,
+    user_id: "user_" + Date.now(),
+    stream: true,
+    additional_messages: [
+      {
+        role: "user",
+        content: message,
+        content_type: "text",
+      },
+    ],
+  };
+
+  if (conversationId) {
+    body.conversation_id = conversationId;
+  }
+
+  console.log("Sending request to Coze:", url, body);
+
+  fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + window.cozeConfig.token,
+    },
+    body: JSON.stringify(body),
+  })
+    .then(function (res) {
+      console.log("Coze response status:", res.status);
+
+      if (!res.ok) {
+        throw new Error("HTTP error! status: " + res.status);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let hasReceivedMessage = false;
+
+      function read() {
+        return reader
+          .read()
+          .then(function (result) {
+            if (result.done) {
+              console.log(
+                "Stream completed. Received message:",
+                hasReceivedMessage,
+              );
+              if (!hasReceivedMessage && onMessage) {
+                onMessage("抱歉，我没有收到有效的回复。");
+              }
+              if (onComplete) onComplete();
+              return;
+            }
+
+            buffer += decoder.decode(result.value, { stream: true });
+            console.log("Received chunk:", buffer);
+
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            lines.forEach(function (line) {
+              line = line.trim();
+              if (line.startsWith("data:")) {
+                const dataStr = line.substring(5).trim();
+                console.log("Parsing data:", dataStr);
+
+                try {
+                  const data = JSON.parse(dataStr);
+                  console.log("Parsed data:", data);
+
+                  // Coze API 返回的消息格式
+                  if (
+                    data.event === "conversation.message.completed" &&
+                    data.data &&
+                    data.data.role === "assistant" &&
+                    data.data.content
+                  ) {
+                    hasReceivedMessage = true;
+                    onMessage(data.data.content);
+                  }
+                  // 处理增量消息
+                  else if (
+                    data.event === "conversation.message.delta" &&
+                    data.data &&
+                    data.data.role === "assistant" &&
+                    data.data.content
+                  ) {
+                    hasReceivedMessage = true;
+                    onMessage(data.data.content);
+                  }
+                } catch (e) {
+                  console.error("Parse error:", e, "Line:", line);
+                }
+              }
+            });
+
+            return read();
+          })
+          .catch(function (err) {
+            console.error("Read error:", err);
+            if (onComplete) onComplete(err);
+          });
+      }
+
+      return read();
+    })
+    .catch(function (err) {
+      console.error("Fetch error:", err);
+      if (onComplete) onComplete(err);
+    });
 };
