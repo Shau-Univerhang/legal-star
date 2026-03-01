@@ -370,3 +370,4 @@ npm run dev
 ## 说明
 
 UI 和样式全部来自 `appui/appui` 下的静态文件；构建脚本会复制到 `public/appui` 以便统一托管。本项目提供数据 API 与认证能力（邮箱+密码、邮箱验证码），你可以在 Supabase 中维护案例库、视频资源和用户数据，而无需频繁修改前端 HTML。
+<!-- Updated at 2026-03-01 to trigger deployment -->
