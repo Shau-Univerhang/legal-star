@@ -155,10 +155,7 @@
                     <i class="fas fa-question-circle text-lg"></i>
                     <span>题库</span>
                 </a>
-                <a href="P-KNOWLEDGE_MAP.html" id="nav-knowledge" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
-                    <i class="fas fa-project-diagram text-lg"></i>
-                    <span>知识图谱</span>
-                </a>
+
                 <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
                     <i class="fas fa-book text-lg"></i>
                     <span>学习资料</span>
@@ -220,9 +217,6 @@
                     </button>
                     <button id="tab-cases" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="cases">
                         案例 <span class="ml-1">(45)</span>
-                    </button>
-                    <button id="tab-knowledge" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="knowledge">
-                        知识点 <span class="ml-1">(32)</span>
                     </button>
                     <button id="tab-materials" class="px-4 py-2 text-sm font-medium rounded-lg focus:outline-none tab-inactive whitespace-nowrap" data-category="materials">
                         学习资料 <span class="ml-1">(28)</span>
@@ -313,15 +307,6 @@
                         relevance: 95
                     },
                     {
-                        id: 'knowledge1',
-                        type: 'knowledge',
-                        title: '<span class="search-highlight">劳动法</span>基础知识详解',
-                        summary: '全面介绍<span class="search-highlight">劳动法</span>的基本原则、适用范围和主要条款，帮助劳动者了解自身权益...',
-                        source: '知识图谱',
-                        time: '2024-01-10',
-                        relevance: 90
-                    },
-                    {
                         id: 'material1',
                         type: 'materials',
                         title: '<span class="search-highlight">劳动法</span>律条文完整版',
@@ -367,17 +352,6 @@
                         source: '案例库',
                         time: '2024-01-12',
                         relevance: 82
-                    }
-                ],
-                knowledge: [
-                    {
-                        id: 'knowledge1',
-                        type: 'knowledge',
-                        title: '<span class="search-highlight">劳动法</span>基础知识详解',
-                        summary: '全面介绍<span class="search-highlight">劳动法</span>的基本原则、适用范围和主要条款，帮助劳动者了解自身权益...',
-                        source: '知识图谱',
-                        time: '2024-01-10',
-                        relevance: 90
                     }
                 ],
                 materials: [
@@ -463,7 +437,6 @@
             function getTypeColor(type) {
                 const colors = {
                     cases: 'from-secondary to-accent',
-                    knowledge: 'from-accent to-secondary',
                     materials: 'from-primary to-secondary',
                     posts: 'from-secondary to-primary'
                 };
@@ -474,7 +447,6 @@
             function getTypeIcon(type) {
                 const icons = {
                     cases: 'fas fa-briefcase',
-                    knowledge: 'fas fa-lightbulb',
                     materials: 'fas fa-book',
                     posts: 'fas fa-comments-alt'
                 };
@@ -497,9 +469,6 @@
                 switch(type) {
                     case 'cases':
                         window.location.href = `P-CASE_DETAIL.html?caseId=${id}`;
-                        break;
-                    case 'knowledge':
-                        window.location.href = `P-KNOWLEDGE_MAP.html?knowledgeId=${id}`;
                         break;
                     case 'materials':
                         window.location.href = `P-LEARNING_MATERIAL.html?materialId=${id}`;
@@ -641,10 +610,6 @@
                 window.location.href = 'P-QUESTION_BANK.html';
             });
 
-            document.querySelector('#nav-knowledge').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = 'P-KNOWLEDGE_MAP.html';
-            });
 
             document.querySelector('#nav-materials').addEventListener('click', function(e) {
                 e.preventDefault();
