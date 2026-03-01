@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="auth_guard.js"></script>
     <title>AI咨询 - 法智星</title>
     <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
     <link
@@ -171,67 +172,46 @@
         class="glass-sidebar w-64 min-h-screen p-6 fixed left-0 top-16 bottom-0 overflow-y-auto"
       >
         <nav id="sidebar-nav" class="space-y-2">
-          <a
-            href="P-HOME.html"
-            id="nav-home"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
-          >
-            <i class="fas fa-house text-lg"></i>
-            <span>首页</span>
-          </a>
-          <a
-            href="P-CASE_LIST.html"
-            id="nav-cases"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
-          >
-            <i class="fas fa-briefcase text-lg"></i>
-            <span>案例库</span>
-          </a>
-          <a
-            href="P-QUESTION_BANK.html"
-            id="nav-questions"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
-          >
-            <i class="fas fa-circle-question text-lg"></i>
-            <span>题库</span>
-          </a>
-          <a
-            href="P-AI_CHAT.html"
-            id="nav-ai"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md"
-          >
-            <i class="fas fa-eye text-lg"></i>
-            <span>AI咨询</span>
-          </a>
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-house text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="P-CIRCLE_LIST.html" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                <a href="P-QUESTION_BANK.html" id="nav-questions" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-circle-question text-lg"></i>
+                    <span>题库</span>
+                </a>
+                <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
+                    <i class="fas fa-eye text-lg"></i>
+                    <span>AI咨询</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
 
-          <a
-            href="P-RANKING.html"
-            id="nav-ranking"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
-          >
-            <i class="fas fa-trophy text-lg"></i>
-            <span>排行榜</span>
-          </a>
+                <div class="border-t border-dark-border my-4"></div>
 
-          <div class="border-t border-dark-border my-4"></div>
-
-          <a
-            href="P-USER_CENTER.html"
-            id="nav-profile"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
-          >
-            <i class="fas fa-user text-lg"></i>
-            <span>个人中心</span>
-          </a>
-          <a
-            href="P-SETTINGS.html"
-            id="nav-settings"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all"
-          >
-            <i class="fas fa-gear text-lg"></i>
-            <span>设置</span>
-          </a>
-        </nav>
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-gear text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
       </aside>
 
       <!-- 主内容区 -->
@@ -451,46 +431,25 @@
         function callCozeAI(userMessage) {
           showTypingIndicator();
 
-          // 检查是否配置了Coze API
-          if (
-            window.cozeConfig &&
-            window.cozeConfig.botId !== "YOUR_COZE_BOT_ID"
-          ) {
-            // 使用非流式API
-            window.sendToCozeAI(userMessage, currentConversationId)
-              .then(function(result) {
-                hideTypingIndicator();
-                console.log("Coze response:", result);
-                
-                // 保存对话ID
-                if (result.conversationId) {
-                  currentConversationId = result.conversationId;
-                }
-                
-                // 显示AI回复
-                addMessage(result.message, false);
-              })
-              .catch(function(error) {
-                hideTypingIndicator();
-                console.error("Coze API error:", error);
-                addMessage("抱歉，服务暂时不可用，请检查API配置或稍后再试。错误：" + error.message, false);
-              });
-          } else {
-            // 未配置Coze API，使用模拟回复
-            setTimeout(() => {
+          // 直接调用后端 API，由后端处理 Coze 配置
+          window.sendToCozeAI(userMessage, currentConversationId)
+            .then(function(result) {
               hideTypingIndicator();
-
-              let response = "欢迎使用AI法律咨询服务！\n\n";
-              response += "⚠️ 系统提示：Coze API 尚未配置\n\n";
-              response += "请先配置您的 Coze Bot ID 和 Token：\n";
-              response += "1. 在 Coze 平台创建智能体并发布\n";
-              response += "2. 获取 Bot ID 和个人访问令牌\n";
-              response += "3. 在 api.js 文件中配置 window.cozeConfig\n\n";
-              response += "配置完成后即可使用智能AI咨询服务。";
-
-              addMessage(response, false);
-            }, 1500);
-          }
+              console.log("Coze response:", result);
+              
+              // 保存对话ID
+              if (result.conversationId) {
+                currentConversationId = result.conversationId;
+              }
+              
+              // 显示AI回复
+              addMessage(result.message, false);
+            })
+            .catch(function(error) {
+              hideTypingIndicator();
+              console.error("Coze API error:", error);
+              addMessage("抱歉，AI 服务暂时不可用。请稍后再试或联系管理员检查后端配置。", false);
+            });
         }
 
         // 发送消息

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="auth_guard.js"></script>
     <title>帖子详情 - 法智星</title>
     <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
     <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
@@ -138,7 +139,7 @@
         <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
             <nav id="sidebar-nav" class="space-y-2">
                 <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
-                    <i class="fas fa-home-alt text-lg"></i>
+                    <i class="fas fa-house text-lg"></i>
                     <span>首页</span>
                 </a>
                 <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
@@ -150,10 +151,13 @@
                     <span>学习圈子</span>
                 </a>
                 <a href="P-QUESTION_BANK.html" id="nav-questions" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
-                    <i class="fas fa-question-circle text-lg"></i>
+                    <i class="fas fa-circle-question text-lg"></i>
                     <span>题库</span>
                 </a>
-
+                <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-eye text-lg"></i>
+                    <span>AI咨询</span>
+                </a>
                 <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
                     <i class="fas fa-book text-lg"></i>
                     <span>学习资料</span>
@@ -162,15 +166,15 @@
                     <i class="fas fa-trophy text-lg"></i>
                     <span>排行榜</span>
                 </a>
-                
+
                 <div class="border-t border-dark-border my-4"></div>
-                
+
                 <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
                     <i class="fas fa-user text-lg"></i>
                     <span>个人中心</span>
                 </a>
                 <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
-                    <i class="fas fa-cog text-lg"></i>
+                    <i class="fas fa-gear text-lg"></i>
                     <span>设置</span>
                 </a>
             </nav>

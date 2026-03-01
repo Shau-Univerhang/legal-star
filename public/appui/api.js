@@ -195,41 +195,20 @@ window.auth = {
 };
 
 /**
- * Coze AI Chat API
- * Configuration: Set your Coze Bot ID and Token
- */
-window.cozeConfig = {
-  // 请替换为你的 Coze Bot ID（仅数字部分）
-  botId: "7563991989000781875",
-  // 请替换为你的 Coze 个人访问令牌
-  token: "pat_CCmVzH6W2ZcfhNHjj0zBvP1HORgwx1eyrnO5lkJODqTcCZgYVWu5UgpzzWVH0wML",
-  // Coze API 基础地址
-  baseUrl: "https://api.coze.cn",
-};
-
-/**
  * Send message to Coze AI and get response
  * @param {string} message - User message
  * @param {string} [conversationId] - Optional conversation ID for context
  * @returns {Promise<{message: string, conversationId: string}>}
  */
 window.sendToCozeAI = function (message, conversationId) {
-  const url = window.cozeConfig.baseUrl + "/v3/chat";
+  const url = apiUrl('/api/ai/chat');
 
   const body = {
-    bot_id: window.cozeConfig.botId,
-    user_id: "user_" + Date.now(),
-    additional_messages: [
-      {
-        role: "user",
-        content: message,
-        content_type: "text",
-      },
-    ],
+    message: message,
   };
 
   if (conversationId) {
-    body.conversation_id = conversationId;
+    body.conversationId = conversationId;
   }
 
   console.log("sendToCozeAI request:", url, body);
@@ -238,7 +217,6 @@ window.sendToCozeAI = function (message, conversationId) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + window.cozeConfig.token,
     },
     body: JSON.stringify(body),
   })
@@ -306,23 +284,15 @@ window.streamCozeAI = function (
   onComplete,
   conversationId,
 ) {
-  const url = window.cozeConfig.baseUrl + "/v3/chat";
+  const url = apiUrl('/api/ai/chat');
 
   const body = {
-    bot_id: window.cozeConfig.botId,
-    user_id: "user_" + Date.now(),
-    stream: true,
-    additional_messages: [
-      {
-        role: "user",
-        content: message,
-        content_type: "text",
-      },
-    ],
+    message: message,
+    stream: true
   };
 
   if (conversationId) {
-    body.conversation_id = conversationId;
+    body.conversationId = conversationId;
   }
 
   console.log("Sending request to Coze:", url, body);
@@ -331,7 +301,6 @@ window.streamCozeAI = function (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + window.cozeConfig.token,
     },
     body: JSON.stringify(body),
   })
