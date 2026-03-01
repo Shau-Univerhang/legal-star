@@ -459,46 +459,25 @@
         function callCozeAI(userMessage) {
           showTypingIndicator();
 
-          // 检查是否配置了Coze API
-          if (
-            window.cozeConfig &&
-            window.cozeConfig.botId !== "YOUR_COZE_BOT_ID"
-          ) {
-            // 使用非流式API
-            window.sendToCozeAI(userMessage, currentConversationId)
-              .then(function(result) {
-                hideTypingIndicator();
-                console.log("Coze response:", result);
-                
-                // 保存对话ID
-                if (result.conversationId) {
-                  currentConversationId = result.conversationId;
-                }
-                
-                // 显示AI回复
-                addMessage(result.message, false);
-              })
-              .catch(function(error) {
-                hideTypingIndicator();
-                console.error("Coze API error:", error);
-                addMessage("抱歉，服务暂时不可用，请检查API配置或稍后再试。错误：" + error.message, false);
-              });
-          } else {
-            // 未配置Coze API，使用模拟回复
-            setTimeout(() => {
+          // 直接调用后端 API，由后端处理 Coze 配置
+          window.sendToCozeAI(userMessage, currentConversationId)
+            .then(function(result) {
               hideTypingIndicator();
-
-              let response = "欢迎使用AI法律咨询服务！\n\n";
-              response += "⚠️ 系统提示：Coze API 尚未配置\n\n";
-              response += "请先配置您的 Coze Bot ID 和 Token：\n";
-              response += "1. 在 Coze 平台创建智能体并发布\n";
-              response += "2. 获取 Bot ID 和个人访问令牌\n";
-              response += "3. 在 api.js 文件中配置 window.cozeConfig\n\n";
-              response += "配置完成后即可使用智能AI咨询服务。";
-
-              addMessage(response, false);
-            }, 1500);
-          }
+              console.log("Coze response:", result);
+              
+              // 保存对话ID
+              if (result.conversationId) {
+                currentConversationId = result.conversationId;
+              }
+              
+              // 显示AI回复
+              addMessage(result.message, false);
+            })
+            .catch(function(error) {
+              hideTypingIndicator();
+              console.error("Coze API error:", error);
+              addMessage("抱歉，AI 服务暂时不可用。请稍后再试或联系管理员检查后端配置。", false);
+            });
         }
 
         // 发送消息
