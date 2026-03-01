@@ -66,7 +66,7 @@
     - `leaderboard/route.js`：排行榜接口 `/api/leaderboard`
     - `ai/chat/route.js`：AI 对话接口 `/api/ai/chat` (对接 Coze)
   - `page.js`：简单的主页，列出 API 路由和前端入口链接
-- `appui/appui/`
+- `public/appui/`
   - 一组静态页面：
     - `P-HOME.html`：首页（今日学习视频 + 推荐案例等）
     - `P-CASE_LIST.html`：案例列表页
