@@ -1,11 +1,58 @@
 # Bird – 法律学习全栈平台（Bird – Full-Stack Legal Learning Platform）
 
-本项目是一个法律学习平台原型：
+本项目是一个法律学习平台原型，旨在通过精美的 UI 和强大的后端服务，为用户提供沉浸式的法律学习体验。
 
-- 后端：基于 **Next.js 14 API Routes** + **Supabase**（PostgreSQL + BaaS）
-- 前端：已有的静态 HTML 页面，位于 `appui/appui/` 目录，只负责展示和交互，数据通过 JS 调用本项目提供的 API 获取
+## 技术栈介绍
 
-目标是：保留原来的精美 UI，把数据来源统一接到一个可扩展的后端（Supabase + Next.js API）。
+本项目采用现代化的前后端分离架构（虽然物理上在同一个仓库），确保了高性能和良好的开发体验。
+
+### 前端 (Frontend)
+- **核心架构**: 多页应用 (MPA) 模式，使用静态 HTML5 页面。
+- **样式框架**: **Tailwind CSS**，实现原子化 CSS 样式，确保设计的一致性和响应式布局。
+- **脚本语言**: 原生 **JavaScript (ES6+)**，负责页面交互和数据渲染。
+- **图标库**: **FontAwesome**，提供丰富的矢量图标。
+- **API 集成**: 封装统一的 `api.js` 模块，处理与后端的数据交互和错误处理。
+
+### 后端 (Backend)
+- **核心框架**: **Next.js 14** (App Router)，利用其强大的 API Routes 功能构建 RESTful API。
+- **运行环境**: **Node.js**。
+- **数据库与服务**: **Supabase**
+  - **PostgreSQL**: 强大的关系型数据库，存储案例、视频、用户数据。
+  - **Authentication**: 提供安全的用户认证系统（邮箱/密码、验证码）。
+- **AI 集成**: **Coze API (ByteDance)**，驱动智能法律助手，提供流式对话体验。
+
+---
+
+## ToC端功能特性 (Consumer Features)
+
+本项目面向终端用户（ToC）实现了丰富的功能，覆盖从学习到互动的完整闭环：
+
+### 1. 用户认证体系
+- **注册**: 支持邮箱 + 验证码的安全注册流程，确保用户身份真实性。
+- **登录**: 提供邮箱 + 密码的传统登录方式。
+- **个人中心**: 用户可以管理个人资料（头像、昵称等），查看学习进度。
+
+### 2. 沉浸式案例学习
+- **案例库**: 完整的案例浏览页面，支持分页加载。
+- **多维筛选**: 支持按“法律领域”（劳动、婚姻、合同等）和“难度等级”筛选案例。
+- **智能排序**: 支持按“最新发布”、“最热门”、“难度”对案例进行排序。
+- **全局搜索**: 快速检索感兴趣的案例或法律知识点。
+- **案例详情**: 深度展示案例背景、判决结果及相关法律条文。
+
+### 3. 视频学习系统
+- **今日学习**: 首页推荐每日精选法律视频。
+- **视频关联**: 视频与具体案例绑定，实现“看视频懂案例”的直观学习方式。
+- **流媒体播放**: 集成视频播放功能，支持流畅的观看体验。
+
+### 4. AI 法律助手
+- **智能咨询**: 内置 AI 聊天机器人，基于 Coze 平台的大模型能力。
+- **实时对话**: 支持流式响应（Streaming），模拟真实的咨询对话体验。
+- **法律问答**: 用户可随时咨询法律问题，AI 提供即时的法律建议和解释。
+
+### 5. 游戏化与社区
+- **积分排行榜**: 根据用户的学习时长和活跃度生成排行榜，激励用户学习。
+- **知识图谱**: 可视化展示法律知识体系（原型）。
+- **互动社区**: 圈子和问答板块，促进用户间的交流与互助。
 
 ---
 
@@ -17,6 +64,7 @@
     - `cases/[id]/route.js`：案件详情接口 `/api/cases/[id]`
     - `videos/route.js`：视频列表接口 `/api/videos`
     - `leaderboard/route.js`：排行榜接口 `/api/leaderboard`
+    - `ai/chat/route.js`：AI 对话接口 `/api/ai/chat` (对接 Coze)
   - `page.js`：简单的主页，列出 API 路由和前端入口链接
 - `appui/appui/`
   - 一组静态页面：
@@ -24,6 +72,7 @@
     - `P-CASE_LIST.html`：案例列表页
     - `P-CASE_DETAIL.html`：案例详情页
     - `P-RANKING.html`：排行榜页
+    - `P-AI_CHAT.html`：AI 咨询页
     - 以及用户中心、问答、知识图谱等其他页面
   - `api.js`：前端调用后端 API 的统一封装
 - `lib/supabase.js`：服务端 Supabase 客户端封装（业务读写用 service role / anon 分工）
@@ -106,11 +155,17 @@ NEXT_PUBLIC_SUPABASE_URL=你的_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的_supabase_anon_key
 # 可选，但建议配置，用于服务端更高权限的 API 调用
 SUPABASE_SERVICE_ROLE_KEY=你的_supabase_service_role_key
+
+# Coze AI 配置 (可选，用于 AI 聊天功能)
+COZE_API_BASE_URL=https://api.coze.cn
+COZE_API_TOKEN=你的_coze_api_token
+COZE_BOT_ID=你的_coze_bot_id
 ```
 
 这些变量会被后端 API 使用：
 - 认证（Auth）使用 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - 业务表读写（如写入 leaderboard）使用 `SUPABASE_SERVICE_ROLE_KEY`（服务端使用，勿泄露）
+- AI 聊天使用 `COZE_API_TOKEN` 和 `COZE_BOT_ID`
 
 ---
 
@@ -188,6 +243,7 @@ SUPABASE_SERVICE_ROLE_KEY=你的_supabase_service_role_key
    - `http://localhost:3000/appui/P-RANKING.html`（排行榜）
    - `http://localhost:3000/appui/P-LOGIN.html`（邮箱登录）
    - `http://localhost:3000/appui/P-REGISTER.html`（邮箱+验证码注册）
+   - `http://localhost:3000/appui/P-AI_CHAT.html`（AI 咨询）
 
 由于静态页面和 API 在同一域名下，`window.API_BASE` 默认为空，就可以直接请求 `/api/...`。
 
@@ -227,6 +283,8 @@ npm run dev
   - `POST http://localhost:3000/api/auth/verify-code` – 校验邮箱验证码
   - `POST http://localhost:3000/api/auth/register` – 邮箱注册（仅邮箱）
   - `POST http://localhost:3000/api/auth/login` – 邮箱登录（密码）
+- AI 接口：
+  - `POST http://localhost:3000/api/ai/chat` – AI 对话
 - 前端页面（按「方式 A」复制到 `public/` 后）：
   - `http://localhost:3000/appui/P-HOME.html`
   - `http://localhost:3000/appui/P-CASE_LIST.html`
@@ -248,6 +306,7 @@ npm run dev
   - `latest`：按 `created_at` 倒序
   - `popular`：按 `learner_count` 倒序
   - `difficulty`：按难度升序
+  - `difficulty_desc`：按难度降序
   - 其他或不传：按 `created_at` 倒序（默认）
 - `keyword` 或 `q`：标题/摘要模糊搜索
 
