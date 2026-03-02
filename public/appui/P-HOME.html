@@ -188,18 +188,18 @@
                 <!-- 应对措施 -->
                 <div class="glass-card rounded-xl p-6 shadow-lg">
                     <h3 class="text-lg font-semibold text-primary mb-4">应对措施</h3>
-                    <div class="space-y-4">
+                    <div id="countermeasures-container" class="space-y-4">
                         <div class="p-4 bg-dark-card rounded-lg border border-glass-border">
                             <h4 class="font-medium text-primary mb-2">1. 识别风险</h4>
-                            <p class="text-sm text-text-secondary">观看视频后，结合案例识别其中涉及的法律风险点。</p>
+                            <p id="risk-point-content" class="text-sm text-text-secondary">加载中...</p>
                         </div>
                         <div class="p-4 bg-dark-card rounded-lg border border-glass-border">
                             <h4 class="font-medium text-primary mb-2">2. 法律依据</h4>
-                            <p class="text-sm text-text-secondary">查阅相关法条，明确适用的法律法规与救济途径。</p>
+                            <p id="legal-basis-content" class="text-sm text-text-secondary">加载中...</p>
                         </div>
                         <div class="p-4 bg-dark-card rounded-lg border border-glass-border">
                             <h4 class="font-medium text-primary mb-2">3. 实操建议</h4>
-                            <p class="text-sm text-text-secondary">保存证据、及时咨询、必要时通过调解或诉讼维权。</p>
+                            <p id="practical-advice-content" class="text-sm text-text-secondary">加载中...</p>
                         </div>
                     </div>
                 </div>
@@ -290,23 +290,36 @@
                 `;
             }
 
-            // 今日学习视频（抖音视频引入）
+            // 今日学习内容 (视频 + 应对措施)
             var videoPlaceholder = document.getElementById('today-video-placeholder');
-            if (videoPlaceholder && typeof window.fetchVideos === 'function') {
-                window.fetchVideos().then(function (list) {
-                    var v = list && list[0];
-                    if (v && v.embed_url) {
-                        videoPlaceholder.outerHTML = '<iframe class="w-full h-full min-h-[200px]" src="' + v.embed_url + '" allowfullscreen></iframe>';
-                    } else if (v && v.url) {
-                        videoPlaceholder.innerHTML = '<a class="text-secondary underline" href="' + v.url + '" target="_blank" rel="noopener">观看视频：' + (v.title || '今日推荐') + '</a>';
-                    } else {
-                        videoPlaceholder.innerHTML = '<p class="text-sm">暂无今日视频</p>';
+            var riskEl = document.getElementById('risk-point-content');
+            var legalEl = document.getElementById('legal-basis-content');
+            var adviceEl = document.getElementById('practical-advice-content');
+
+            if (typeof window.fetchDailyLearning === 'function') {
+                window.fetchDailyLearning().then(function (data) {
+                    if (!data) {
+                        if (videoPlaceholder) videoPlaceholder.innerHTML = '<p class="text-sm">暂无今日视频</p>';
+                        if (riskEl) riskEl.textContent = '暂无数据';
+                        if (legalEl) legalEl.textContent = '暂无数据';
+                        if (adviceEl) adviceEl.textContent = '暂无数据';
+                        return;
                     }
-                }).catch(function () {
-                    if (videoPlaceholder) videoPlaceholder.innerHTML = '<p class="text-sm">加载失败</p>';
+
+                    // Load Video
+                    if (videoPlaceholder && data.video_url) {
+                        videoPlaceholder.outerHTML = '<iframe class="w-full h-full min-h-[300px]" src="' + data.video_url + '" allowfullscreen frameborder="0"></iframe>';
+                    }
+
+                    // Load Countermeasures
+                    if (riskEl) riskEl.textContent = data.risk_point || '暂无内容';
+                    if (legalEl) legalEl.textContent = data.legal_basis || '暂无内容';
+                    if (adviceEl) adviceEl.textContent = data.practical_advice || '暂无内容';
+
+                }).catch(function (err) {
+                    console.error('Fetch daily learning error:', err);
+                    if (videoPlaceholder) videoPlaceholder.innerHTML = '<p class="text-sm text-red-500">加载失败</p>';
                 });
-            } else if (videoPlaceholder) {
-                videoPlaceholder.innerHTML = '<p class="text-sm">暂无今日视频</p>';
             }
 
             // Load recommended cases for "For You" section - 首页已移除推荐区，保�?API 调用供它处使�?            if (typeof window.fetchCases === 'function') {

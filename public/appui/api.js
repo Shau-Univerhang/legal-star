@@ -72,6 +72,17 @@ window.fetchLeaderboard = function (opts) {
 };
 
 /**
+ * Fetch latest daily learning content.
+ * @returns {Promise<Object|null>}
+ */
+window.fetchDailyLearning = function () {
+  return fetch(apiUrl('/api/daily-learning')).then(function (res) {
+    if (!res.ok) throw new Error('Daily Learning API error: ' + res.status);
+    return res.json();
+  });
+};
+
+/**
  * Authentication API
  */
 window.auth = {
