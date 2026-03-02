@@ -56,14 +56,15 @@ window.fetchVideos = function (caseId) {
 };
 
 /**
- * Fetch leaderboard ranked by score descending.
- * @param {Object} opts - { limit, offset }
+ * Fetch leaderboard ranked by score/time/accuracy descending.
+ * @param {Object} opts - { limit, offset, sort }
  * @returns {Promise<Array>}
  */
 window.fetchLeaderboard = function (opts) {
   const params = new URLSearchParams();
   if (opts && opts.limit) params.set('limit', opts.limit);
   if (opts && opts.offset) params.set('offset', opts.offset);
+  if (opts && opts.sort) params.set('sort', opts.sort);
   return fetch(apiUrl('/api/leaderboard?' + params.toString())).then(function (res) {
     if (!res.ok) throw new Error('Leaderboard API error: ' + res.status);
     return res.json();
