@@ -18,9 +18,13 @@ export async function POST(request) {
 
     console.log(`Sending OTP to ${email} using key starting with ${key.substring(0, 5)}...`);
 
+    // Explicitly set emailRedirectTo to null to hint Supabase to send OTP instead of Magic Link
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: true }
+      options: { 
+        shouldCreateUser: true,
+        emailRedirectTo: null 
+      }
     });
 
     if (error) {
