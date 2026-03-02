@@ -257,42 +257,21 @@
                   <p class="mt-3 text-text-primary">
                     请问有什么可以帮助您的吗？
                   </p>
+                  
+                  <!-- 欢迎语下方的推荐问题 -->
+                  <div class="mt-4 flex flex-col space-y-2">
+                    <button class="suggestion-btn text-left px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary hover:bg-glass-bg transition-all text-sm">
+                        如何识别虚假房源信息？
+                    </button>
+                    <button class="suggestion-btn text-left px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary hover:bg-glass-bg transition-all text-sm">
+                        大学生租房被骗后如何进行心理疏导？
+                    </button>
+                    <button class="suggestion-btn text-left px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary hover:bg-glass-bg transition-all text-sm">
+                        有哪些渠道可以发布求租信息？
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <!-- 快捷操作按钮 -->
-            <div class="flex flex-wrap gap-2 mb-4">
-              <button
-                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
-                data-question="公司试用期不交社保合法吗？我该如何维权？"
-              >
-                <i class="fas fa-briefcase mr-1"></i>劳动纠纷
-              </button>
-              <button
-                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
-                data-question="离婚时对方隐瞒共同财产，我该怎么追回？"
-              >
-                <i class="fas fa-ring mr-1"></i>婚姻家庭
-              </button>
-              <button
-                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
-                data-question="租房合同没到期房东要赶我走，能要求赔偿吗？"
-              >
-                <i class="fas fa-file-contract mr-1"></i>合同纠纷
-              </button>
-              <button
-                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
-                data-question="网购商品有质量问题，商家拒绝退货怎么办？"
-              >
-                <i class="fas fa-shopping-cart mr-1"></i>消费者权益
-              </button>
-              <button
-                class="quick-action-btn px-4 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-secondary hover:text-primary hover:border-secondary text-sm"
-                data-question="楼上漏水导致我家墙皮脱落，邻居不配合维修怎么起诉？"
-              >
-                <i class="fas fa-building mr-1"></i>房产物业
-              </button>
             </div>
 
             <!-- 输入区域 -->
@@ -523,17 +502,10 @@
         });
 
         // 快捷操作按钮
-        document.querySelectorAll(".quick-action-btn").forEach((btn) => {
+        document.querySelectorAll(".suggestion-btn").forEach((btn) => {
           btn.addEventListener("click", function () {
-            // 优先获取 data-question 属性，如果没有则使用按钮文本
-            const question = this.getAttribute('data-question');
-            
-            if (question) {
-                chatInput.value = question;
-            } else {
-                const text = this.textContent.trim();
-                chatInput.value = "我想咨询关于" + text + "的问题：";
-            }
+            const text = this.textContent.trim();
+            chatInput.value = text;
             chatInput.focus();
             
             // 自动发送（用户体验更好）
