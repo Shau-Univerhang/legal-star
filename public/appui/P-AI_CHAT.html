@@ -427,29 +427,66 @@
         // 对话上下文ID
         let currentConversationId = null;
 
-        // 调用Coze AI获取回复
+        // 调用Coze AI获取回复 (Stream模式)
         function callCozeAI(userMessage) {
           showTypingIndicator();
+          
+          let aiMessageDiv = null;
+          let aiMessageContent = "";
+          let messageParagraph = null;
 
-          // 直接调用后端 API，由后端处理 Coze 配置
-          window.sendToCozeAI(userMessage, currentConversationId)
-            .then(function(result) {
-              hideTypingIndicator();
-              console.log("Coze response:", result);
-              
-              // 保存对话ID
-              if (result.conversationId) {
-                currentConversationId = result.conversationId;
-              }
-              
-              // 显示AI回复
-              addMessage(result.message, false);
-            })
-            .catch(function(error) {
-              hideTypingIndicator();
-              console.error("Coze API error:", error);
-              addMessage("抱歉，AI 服务暂时不可用。请稍后再试或联系管理员检查后端配置。", false);
+          // 使用流式接口
+          if (typeof window.streamCozeAI === 'function') {
+            window.streamCozeAI(
+                userMessage,
+                // onMessage: 接收到增量内容
+                function(chunk) {
+                    hideTypingIndicator();
+                    
+                    // 如果还没有创建AI回复框，则创建
+                    if (!aiMessageDiv) {
+                        aiMessageDiv = document.createElement("div");
+                        aiMessageDiv.className = "flex items-start space-x-3";
+                        aiMessageDiv.innerHTML = `
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div class="chat-message ai p-4">
+                                <p class="text-text-primary whitespace-pre-wrap"></p>
+                            </div>
+                        `;
+                        chatMessages.appendChild(aiMessageDiv);
+                        messageParagraph = aiMessageDiv.querySelector("p");
+                    }
+                    
+                    // 追加内容
+                    aiMessageContent += chunk;
+                    if (messageParagraph) messageParagraph.textContent = aiMessageContent;
+                    
+                    // 滚动到底部
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                },
+                // onComplete: 完成
+                function() {
+                    console.log("Stream completed");
+                    hideTypingIndicator();
+                    // 如果没有收到任何内容
+                    if (!aiMessageContent) {
+                        addMessage("抱歉，AI 没有返回任何内容。请检查网络或后端配置。", false);
+                    }
+                },
+                // conversationId
+                currentConversationId
+            ).catch(function(err) {
+                hideTypingIndicator();
+                console.error("Coze Stream Error:", err);
+                addMessage("AI 服务连接失败: " + (err.message || "未知错误"), false);
             });
+          } else {
+              // 降级处理
+              addMessage("系统错误: 缺少流式接口支持。", false);
+              hideTypingIndicator();
+          }
         }
 
         // 发送消息

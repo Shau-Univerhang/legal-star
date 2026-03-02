@@ -361,17 +361,9 @@ window.streamCozeAI = function (
                   console.log("Parsed data:", data);
 
                   // Coze API 返回的消息格式
+                  
+                  // 处理增量消息 (Stream)
                   if (
-                    data.event === "conversation.message.completed" &&
-                    data.data &&
-                    data.data.role === "assistant" &&
-                    data.data.content
-                  ) {
-                    hasReceivedMessage = true;
-                    onMessage(data.data.content);
-                  }
-                  // 处理增量消息
-                  else if (
                     data.event === "conversation.message.delta" &&
                     data.data &&
                     data.data.role === "assistant" &&
@@ -379,6 +371,20 @@ window.streamCozeAI = function (
                   ) {
                     hasReceivedMessage = true;
                     onMessage(data.data.content);
+                  }
+                  // 处理完成消息 (Stream End) - 通常不需要处理内容，因为 delta 已经涵盖了
+                  else if (
+                    data.event === "conversation.message.completed"
+                  ) {
+                    console.log("Coze stream message completed");
+                    // 标记为已收到，防止触发"未收到消息"的错误
+                    hasReceivedMessage = true; 
+                  }
+                  // 兼容旧版/其他事件
+                  else if (
+                    data.event === "conversation.chat.completed"
+                  ) {
+                     console.log("Coze chat completed");
                   }
                 } catch (e) {
                   console.error("Parse error:", e, "Line:", line);
