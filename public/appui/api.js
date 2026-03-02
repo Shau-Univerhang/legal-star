@@ -327,6 +327,7 @@ window.streamCozeAI = function (
       const decoder = new TextDecoder();
       let buffer = "";
       let hasReceivedMessage = false;
+      let currentEvent = null;
 
       function read() {
         return reader
@@ -337,57 +338,73 @@ window.streamCozeAI = function (
                 "Stream completed. Received message:",
                 hasReceivedMessage,
               );
+              // 如果没有收到任何有效消息，才显示错误
               if (!hasReceivedMessage && onMessage) {
-                onMessage("抱歉，我没有收到有效的回复。");
+                 // 可能是因为 Coze 返回了错误信息，或者流意外中断
+                 // 不要直接报错，因为可能只是没有 delta 消息
+                 console.warn("No message content received");
               }
               if (onComplete) onComplete();
               return;
             }
 
             buffer += decoder.decode(result.value, { stream: true });
-            console.log("Received chunk:", buffer);
-
+            
             const lines = buffer.split("\n");
+            // 处理最后一行可能不完整的情况
             buffer = lines.pop();
 
             lines.forEach(function (line) {
               line = line.trim();
-              if (line.startsWith("data:")) {
-                const dataStr = line.substring(5).trim();
-                console.log("Parsing data:", dataStr);
+              if (!line) return; // 跳过空行
 
+              if (line.startsWith("event:")) {
+                currentEvent = line.substring(6).trim();
+              } else if (line.startsWith("data:")) {
+                const dataStr = line.substring(5).trim();
+                
                 try {
                   const data = JSON.parse(dataStr);
-                  console.log("Parsed data:", data);
-
-                  // Coze API 返回的消息格式
                   
-                  // 处理增量消息 (Stream)
+                  // 尝试获取事件类型：优先用 SSE 的 event，其次用 data.event
+                  const eventType = currentEvent || data.event;
+
+                  // 1. 处理增量消息 (Stream Delta)
                   if (
-                    data.event === "conversation.message.delta" &&
-                    data.data &&
-                    data.data.role === "assistant" &&
-                    data.data.content
+                    (eventType === "conversation.message.delta" || !eventType) && // 如果没有 eventType，也尝试解析 content
+                    data.content && 
+                    data.role === "assistant" &&
+                    data.type === "answer"
                   ) {
                     hasReceivedMessage = true;
-                    onMessage(data.data.content);
+                    onMessage(data.content);
                   }
-                  // 处理完成消息 (Stream End) - 通常不需要处理内容，因为 delta 已经涵盖了
+                  // 兼容：有些情况下 content 在 data.data.content
                   else if (
-                    data.event === "conversation.message.completed"
+                     data.data && 
+                     data.data.content &&
+                     data.data.role === "assistant"
                   ) {
-                    console.log("Coze stream message completed");
-                    // 标记为已收到，防止触发"未收到消息"的错误
+                     hasReceivedMessage = true;
+                     onMessage(data.data.content);
+                  }
+                  
+                  // 2. 处理完成消息
+                  else if (eventType === "conversation.message.completed") {
+                    console.log("Message completed");
+                    // 确保标记为已接收，避免报错
                     hasReceivedMessage = true; 
                   }
-                  // 兼容旧版/其他事件
-                  else if (
-                    data.event === "conversation.chat.completed"
-                  ) {
-                     console.log("Coze chat completed");
+                  
+                  // 3. 处理错误消息
+                  else if (data.code && data.code !== 0) {
+                     console.error("Coze Error:", data.msg);
+                     onMessage("\n[系统错误: " + (data.msg || "未知错误") + "]");
+                     hasReceivedMessage = true;
                   }
+
                 } catch (e) {
-                  console.error("Parse error:", e, "Line:", line);
+                  console.error("Parse error:", e);
                 }
               }
             });
