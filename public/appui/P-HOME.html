@@ -175,12 +175,22 @@
                 <h2 class="text-2xl font-bold gradient-text mb-6">今日学习内容概览</h2>
 
                 <!-- 抖音视频引入 -->
-                <div class="glass-card rounded-xl p-6 mb-6 shadow-lg">
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
                     <h3 class="text-lg font-semibold text-primary mb-4">抖音视频引入</h3>
-                    <div id="douyin-video-container" class="aspect-video max-w-2xl bg-dark-card rounded-lg overflow-hidden flex items-center justify-center border border-glass-border">
-                        <div id="today-video-placeholder" class="text-text-secondary text-center p-8">
-                            <p class="mb-2">今日推荐学习视频</p>
-                            <p class="text-sm">加载中...</p>
+                    <div id="video-container" class="relative aspect-video max-w-2xl mx-auto bg-dark-card rounded-lg overflow-hidden border border-glass-border group cursor-pointer">
+                        <!-- 视频封面和播放按钮 -->
+                        <div id="video-cover" class="absolute inset-0 z-10 flex items-center justify-center">
+                            <img id="video-thumbnail" src="" alt="视频封面" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity hidden">
+                            <div class="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                                <div class="w-16 h-16 bg-secondary bg-opacity-80 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-play text-white text-2xl ml-1"></i>
+                                </div>
+                            </div>
+                            <p id="video-loading-text" class="absolute bottom-4 text-sm text-text-secondary">正在加载视频...</p>
+                        </div>
+                        <!-- 视频播放器容器 (初始隐藏) -->
+                        <div id="video-player-wrapper" class="hidden w-full h-full bg-black">
+                            <!-- iframe 将在这里加载 -->
                         </div>
                     </div>
                 </div>
@@ -291,7 +301,12 @@
             }
 
             // 今日学习内容 (视频 + 应对措施)
-            var videoPlaceholder = document.getElementById('today-video-placeholder');
+            var videoContainer = document.getElementById('video-container');
+            var videoCover = document.getElementById('video-cover');
+            var videoThumbnail = document.getElementById('video-thumbnail');
+            var videoLoadingText = document.getElementById('video-loading-text');
+            var videoPlayerWrapper = document.getElementById('video-player-wrapper');
+            
             var riskEl = document.getElementById('risk-point-content');
             var legalEl = document.getElementById('legal-basis-content');
             var adviceEl = document.getElementById('practical-advice-content');
@@ -299,16 +314,49 @@
             if (typeof window.fetchDailyLearning === 'function') {
                 window.fetchDailyLearning().then(function (data) {
                     if (!data) {
-                        if (videoPlaceholder) videoPlaceholder.innerHTML = '<p class="text-sm">暂无今日视频</p>';
+                        if (videoLoadingText) videoLoadingText.textContent = '暂无今日视频';
                         if (riskEl) riskEl.textContent = '暂无数据';
                         if (legalEl) legalEl.textContent = '暂无数据';
                         if (adviceEl) adviceEl.textContent = '暂无数据';
                         return;
                     }
 
-                    // Load Video
-                    if (videoPlaceholder && data.video_url) {
-                        videoPlaceholder.outerHTML = '<iframe class="w-full h-full min-h-[300px]" src="' + data.video_url + '" allowfullscreen frameborder="0"></iframe>';
+                    // === Load Video Cover & Setup Player ===
+                    if (videoContainer && data.video_url) {
+                        // 1. 设置封面图
+                        if (videoThumbnail) {
+                            // 优先使用数据库里的封面，如果没有则使用默认图
+                            var coverUrl = data.thumbnail_url || 'https://s.coze.cn/image/tPdTjh-V2X0/';
+                            videoThumbnail.src = coverUrl;
+                            videoThumbnail.classList.remove('hidden');
+                        }
+                        
+                        // 2. 隐藏加载文字
+                        if (videoLoadingText) videoLoadingText.style.display = 'none';
+
+                        // 3. 绑定点击事件：点击封面播放视频
+                        var isPlaying = false;
+                        videoContainer.addEventListener('click', function() {
+                            if (isPlaying) return;
+                            isPlaying = true;
+
+                            // 隐藏封面
+                            videoCover.style.display = 'none';
+                            
+                            // 显示播放器容器
+                            videoPlayerWrapper.classList.remove('hidden');
+                            
+                            // 动态插入 iframe (这样页面加载时不消耗流量，点击才加载)
+                            // 自动播放参数：B站(&autoplay=1), 抖音/通用(?autoplay=1)
+                            var videoSrc = data.video_url;
+                            if (videoSrc.indexOf('?') === -1) {
+                                videoSrc += '?autoplay=1';
+                            } else {
+                                videoSrc += '&autoplay=1';
+                            }
+                            
+                            videoPlayerWrapper.innerHTML = '<iframe class="w-full h-full" src="' + videoSrc + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" scrolling="no"></iframe>';
+                        });
                     }
 
                     // Load Countermeasures
@@ -318,7 +366,10 @@
 
                 }).catch(function (err) {
                     console.error('Fetch daily learning error:', err);
-                    if (videoPlaceholder) videoPlaceholder.innerHTML = '<p class="text-sm text-red-500">加载失败</p>';
+                    if (videoLoadingText) {
+                        videoLoadingText.textContent = '加载失败';
+                        videoLoadingText.classList.add('text-red-500');
+                    }
                 });
             }
 
