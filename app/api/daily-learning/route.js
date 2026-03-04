@@ -8,10 +8,10 @@ export async function GET(request) {
   try {
     const supabase = getSupabase();
 
-    // 显式指定字段，确保获取到 thumbnail_url
+    // 使用 select('*') 以兼容旧 schema（如果 thumbnail_url 列不存在也不会报错）
     const { data, error } = await supabase
       .from('daily_learning')
-      .select('id, title, video_url, thumbnail_url, risk_point, legal_basis, practical_advice, created_at')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

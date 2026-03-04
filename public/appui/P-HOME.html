@@ -453,7 +453,7 @@
                                     var bvidMatch = videoSrc.match(/\/video\/(BV\w+)/i);
                                     if (bvidMatch && bvidMatch[1]) {
                                         var bvid = bvidMatch[1];
-                                        videoSrc = '//player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&danmaku=0';
+                                        videoSrc = 'https://player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&danmaku=0';
                                         console.log("Converted Bilibili URL to embed format:", videoSrc);
                                     }
                                 }
@@ -467,7 +467,7 @@
                                 
                                 console.log("Loading video iframe:", videoSrc);
                                 log("Loading iframe: " + videoSrc);
-                                videoPlayerWrapper.innerHTML = '<iframe class="w-full h-full" src="' + videoSrc + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" scrolling="no" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts"></iframe>';
+                                videoPlayerWrapper.innerHTML = '<iframe class="w-full h-full" src="' + videoSrc + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" scrolling="no" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts" referrerpolicy="no-referrer"></iframe>';
                             }
                         });
                     } else {
@@ -495,7 +495,8 @@
                 });
             }
 
-            // Load recommended cases for "For You" section - 首页已移除推荐区，保�?API 调用供它处使�?            if (typeof window.fetchCases === 'function') {
+            // Load recommended cases for "For You" section
+            if (typeof window.fetchCases === 'function') {
                 window.fetchCases({ page: 1, pageSize: 3 }).then(function(res) {
                     var cases = res.data || [];
                     var fieldLabels = { labor: '\u52b3\u52a8\u6cd5', marriage: '\u5a5a\u59fb\u6cd5', contract: '\u5408\u540c\u6cd5', consumer: '\u6d88\u8d39\u8005\u6743\u76ca' };
