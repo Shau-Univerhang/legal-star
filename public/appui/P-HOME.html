@@ -259,13 +259,35 @@
         </main>
     </div>
 
+    <!-- 确保 api.js 在主逻辑之前加载 -->
     <script src="api.js"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auth & User Interface Logic
-            const authSection = document.getElementById('auth-section');
-            
-            if (window.auth && window.auth.isLoggedIn()) {
+            console.log('DOM Loaded, initializing...');
+
+            // 检查 api.js 是否加载
+            if (typeof window.fetchDailyLearning !== 'function') {
+                console.error('CRITICAL: api.js not loaded or fetchDailyLearning missing!');
+                // 尝试手动重新加载 api.js
+                var script = document.createElement('script');
+                script.src = 'api.js';
+                script.onload = function() {
+                    console.log('api.js reloaded manually');
+                    initPage(); // 重新初始化
+                };
+                document.body.appendChild(script);
+            } else {
+                initPage();
+            }
+
+            function initPage() {
+                console.log('Initializing page logic...');
+                
+                // Auth & User Interface Logic
+                const authSection = document.getElementById('auth-section');
+                // ... (rest of auth logic) ...
+
                 // === Logged In State ===
                 const user = window.auth.getUser();
                 const name = user ? (user.user_metadata?.username || (user.email ? user.email.split('@')[0] : '学法者')) : '学法者';
