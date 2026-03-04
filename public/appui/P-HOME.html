@@ -290,10 +290,12 @@
 
                 // === Logged In State ===
                 const user = window.auth.getUser();
-                const name = user ? (user.user_metadata?.username || (user.email ? user.email.split('@')[0] : '学法者')) : '学法者';
                 
-                // Render User Avatar
-                authSection.innerHTML = `
+                if (user) {
+                    const name = user.user_metadata?.username || (user.email ? user.email.split('@')[0] : '学法者');
+                    
+                    // Render User Avatar
+                    authSection.innerHTML = `
                     <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
                         <img src="./P-HOME_files/saved_resource" alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
                         <span class="hidden md:block text-sm">${name}</span>
@@ -562,6 +564,7 @@
                 console.log('显示通知列表');
                 // 这里可以添加显示通知的逻辑
             });
+            } // End of initPage
         });
     </script>
 
