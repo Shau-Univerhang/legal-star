@@ -259,12 +259,26 @@
         </main>
     </div>
 
-    <!-- 确保 api.js 在主逻辑之前加载 -->
-    <script src="api.js"></script>
+    <!-- 确保 api.js 在主逻辑之前加载，添加时间戳防止缓存 -->
+    <script src="api.js?v=2"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Loaded, initializing...');
+
+            // 设置加载超时提示
+            setTimeout(function() {
+                var loadingText = document.getElementById('video-loading-text');
+                if (loadingText && loadingText.textContent.includes('加载')) {
+                    loadingText.textContent = '加载超时，请刷新页面或检查网络';
+                    loadingText.classList.add('text-red-500');
+                    
+                    // 如果 api.js 没加载，给个明确提示
+                    if (typeof window.fetchDailyLearning !== 'function') {
+                         loadingText.textContent = '系统组件(api.js)加载失败，请联系管理员';
+                    }
+                }
+            }, 10000); // 10秒超时
 
             // 检查 api.js 是否加载
             if (typeof window.fetchDailyLearning !== 'function') {
