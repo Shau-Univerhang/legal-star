@@ -187,6 +187,8 @@
                                 </div>
                             </div>
                             <p id="video-loading-text" class="absolute bottom-4 text-sm text-text-secondary">正在加载视频...</p>
+                            <!-- 调试日志区域 -->
+                            <div id="debug-log" class="absolute bottom-10 left-4 right-4 text-xs text-white bg-black bg-opacity-50 p-2 rounded hidden" style="max-height: 100px; overflow-y: auto; pointer-events: none;"></div>
                         </div>
                         <!-- 视频播放器容器 (初始隐藏) -->
                         <div id="video-player-wrapper" class="hidden w-full h-full bg-black">
@@ -264,7 +266,33 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Loaded, initializing...');
+            // --- Debug Logger ---
+            var debugLog = document.getElementById('debug-log');
+            if(debugLog) { debugLog.classList.remove('hidden'); }
+            function log(msg) {
+                console.log(msg);
+                if(debugLog) {
+                    var line = document.createElement('div');
+                    line.textContent = '> ' + msg;
+                    debugLog.appendChild(line);
+                    debugLog.scrollTop = debugLog.scrollHeight;
+                }
+            }
+            function error(msg) {
+                console.error(msg);
+                if(debugLog) {
+                    var line = document.createElement('div');
+                    line.style.color = '#ff6b6b';
+                    line.textContent = '! ' + msg;
+                    debugLog.appendChild(line);
+                    debugLog.scrollTop = debugLog.scrollHeight;
+                }
+            }
+
+            log('v2.2 DOM Loaded, initializing...');
+            
+            // 检查 API_BASE
+            log('API_BASE: ' + (window.API_BASE || 'default'));
 
             // 设置加载超时提示
             setTimeout(function() {
@@ -272,23 +300,28 @@
                 if (loadingText && loadingText.textContent.includes('加载')) {
                     loadingText.textContent = '加载超时，请刷新页面或检查网络';
                     loadingText.classList.add('text-red-500');
+                    error('Timeout: 10s reached without success');
                     
                     // 如果 api.js 没加载，给个明确提示
                     if (typeof window.fetchDailyLearning !== 'function') {
                          loadingText.textContent = '系统组件(api.js)加载失败，请联系管理员';
+                         error('api.js function missing!');
                     }
                 }
             }, 10000); // 10秒超时
 
             // 检查 api.js 是否加载
             if (typeof window.fetchDailyLearning !== 'function') {
-                console.error('CRITICAL: api.js not loaded or fetchDailyLearning missing!');
+                error('CRITICAL: api.js not loaded or fetchDailyLearning missing!');
                 // 尝试手动重新加载 api.js
                 var script = document.createElement('script');
-                script.src = 'api.js';
+                script.src = 'api.js?v=' + Date.now();
                 script.onload = function() {
-                    console.log('api.js reloaded manually');
+                    log('api.js reloaded manually');
                     initPage(); // 重新初始化
+                };
+                script.onerror = function() {
+                    error('Failed to reload api.js');
                 };
                 document.body.appendChild(script);
             } else {
@@ -296,7 +329,7 @@
             }
 
             function initPage() {
-                console.log('Initializing page logic...');
+                log('Initializing page logic...');
                 
                 // Auth & User Interface Logic
                 const authSection = document.getElementById('auth-section');
@@ -350,12 +383,13 @@
             var adviceEl = document.getElementById('practical-advice-content');
 
             if (typeof window.fetchDailyLearning === 'function') {
-                console.log("Fetching daily learning data...");
+                log("Fetching daily learning data...");
                 window.fetchDailyLearning().then(function (data) {
-                    console.log("Daily learning data received:", data);
+                    log("Daily learning data received (title): " + (data ? data.title : 'null'));
                     
                     if (!data) {
                         console.warn("No daily learning data found.");
+                        error("No data returned from API");
                         if (videoLoadingText) videoLoadingText.textContent = '暂无今日视频';
                         if (riskEl) riskEl.textContent = '暂无数据';
                         if (legalEl) legalEl.textContent = '暂无数据';
@@ -365,6 +399,7 @@
 
                     // === Load Video Cover & Setup Player ===
                     if (videoContainer && data.video_url) {
+                        log("Processing video: " + data.video_url);
                         // 1. 设置封面图
                         if (videoThumbnail) {
                             // 优先使用数据库里的封面，如果没有则使用默认图
@@ -380,6 +415,7 @@
                             }
                             
                             console.log("Setting video thumbnail:", coverUrl);
+                            log("Thumbnail set: " + coverUrl);
                             
                             videoThumbnail.src = coverUrl;
                             videoThumbnail.classList.remove('hidden');
@@ -387,6 +423,7 @@
                             // 错误处理：如果图片加载失败，回退到默认图
                             videoThumbnail.onerror = function() {
                                 console.warn("Thumbnail load failed, using default.");
+                                error("Thumbnail load failed");
                                 this.src = 'https://s.coze.cn/image/tPdTjh-V2X0/';
                             };
                         }
@@ -399,7 +436,7 @@
                         videoContainer.addEventListener('click', function() {
                             if (isPlaying) return;
                             isPlaying = true;
-                            console.log("Video clicked, starting playback...");
+                            log("Video clicked, starting playback...");
 
                             // 隐藏封面
                             if(videoCover) videoCover.style.display = 'none';
@@ -429,11 +466,13 @@
                                 }
                                 
                                 console.log("Loading video iframe:", videoSrc);
+                                log("Loading iframe: " + videoSrc);
                                 videoPlayerWrapper.innerHTML = '<iframe class="w-full h-full" src="' + videoSrc + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" scrolling="no" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts"></iframe>';
                             }
                         });
                     } else {
                         console.warn("Video container or URL missing");
+                        error("Missing video container or URL");
                         // 添加调试信息：如果数据缺失
                         if (videoLoadingText) {
                             videoLoadingText.innerHTML = '视频数据缺失<br><span style="font-size:10px; opacity:0.7">API返回数据正常，但video_url字段为空</span>';
@@ -448,6 +487,7 @@
 
                 }).catch(function (err) {
                     console.error('Fetch daily learning error:', err);
+                    error("Fetch error: " + err.message);
                     if (videoLoadingText) {
                         videoLoadingText.innerHTML = '加载失败: ' + err.message + '<br><span style="font-size:10px; opacity:0.7">请检查网络或联系管理员</span>';
                         videoLoadingText.classList.add('text-red-500');
