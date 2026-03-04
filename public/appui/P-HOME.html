@@ -312,8 +312,12 @@
             var adviceEl = document.getElementById('practical-advice-content');
 
             if (typeof window.fetchDailyLearning === 'function') {
+                console.log("Fetching daily learning data...");
                 window.fetchDailyLearning().then(function (data) {
+                    console.log("Daily learning data received:", data);
+                    
                     if (!data) {
+                        console.warn("No daily learning data found.");
                         if (videoLoadingText) videoLoadingText.textContent = '暂无今日视频';
                         if (riskEl) riskEl.textContent = '暂无数据';
                         if (legalEl) legalEl.textContent = '暂无数据';
@@ -326,37 +330,58 @@
                         // 1. 设置封面图
                         if (videoThumbnail) {
                             // 优先使用数据库里的封面，如果没有则使用默认图
+                            // 注意：数据库字段名必须完全匹配，区分大小写
                             var coverUrl = data.thumbnail_url || 'https://s.coze.cn/image/tPdTjh-V2X0/';
+                            console.log("Setting video thumbnail:", coverUrl);
+                            
                             videoThumbnail.src = coverUrl;
                             videoThumbnail.classList.remove('hidden');
+                            
+                            // 错误处理：如果图片加载失败，回退到默认图
+                            videoThumbnail.onerror = function() {
+                                console.warn("Thumbnail load failed, using default.");
+                                this.src = 'https://s.coze.cn/image/tPdTjh-V2X0/';
+                            };
                         }
                         
                         // 2. 隐藏加载文字
                         if (videoLoadingText) videoLoadingText.style.display = 'none';
 
-                        // 3. 绑定点击事件：点击封面播放视频
+                        // 3. 绑定点击事件
                         var isPlaying = false;
                         videoContainer.addEventListener('click', function() {
                             if (isPlaying) return;
                             isPlaying = true;
+                            console.log("Video clicked, starting playback...");
 
                             // 隐藏封面
-                            videoCover.style.display = 'none';
+                            if(videoCover) videoCover.style.display = 'none';
                             
                             // 显示播放器容器
-                            videoPlayerWrapper.classList.remove('hidden');
-                            
-                            // 动态插入 iframe (这样页面加载时不消耗流量，点击才加载)
-                            // 自动播放参数：B站(&autoplay=1), 抖音/通用(?autoplay=1)
-                            var videoSrc = data.video_url;
-                            if (videoSrc.indexOf('?') === -1) {
-                                videoSrc += '?autoplay=1';
-                            } else {
-                                videoSrc += '&autoplay=1';
+                            if(videoPlayerWrapper) {
+                                videoPlayerWrapper.classList.remove('hidden');
+                                
+                                // 处理 B站 链接 (添加 autoplay)
+                                var videoSrc = data.video_url;
+                                // 简单判断是否已有参数
+                                var separator = videoSrc.includes('?') ? '&' : '?';
+                                // B站 iframe 参数通常是 &autoplay=1，通用的是 ?autoplay=1
+                                // 这里为了保险，我们根据 URL 特征处理
+                                if (videoSrc.includes('player.bilibili.com')) {
+                                    // B站特定优化：由用户点击触发，通常不需要额外参数，或者 &autoplay=1
+                                    if (!videoSrc.includes('autoplay')) {
+                                        videoSrc += '&autoplay=1';
+                                    }
+                                } else {
+                                    videoSrc += separator + 'autoplay=1';
+                                }
+                                
+                                console.log("Loading video iframe:", videoSrc);
+                                videoPlayerWrapper.innerHTML = '<iframe class="w-full h-full" src="' + videoSrc + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" scrolling="no"></iframe>';
                             }
-                            
-                            videoPlayerWrapper.innerHTML = '<iframe class="w-full h-full" src="' + videoSrc + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" scrolling="no"></iframe>';
                         });
+                    } else {
+                        console.warn("Video container or URL missing");
                     }
 
                     // Load Countermeasures
