@@ -97,7 +97,7 @@
                 <a href="P-HOME.html#" id="nav-home-top" class="text-primary font-medium border-b-2 border-primary py-1">首页</a>
                 <a href="P-CASE_LIST.html" id="nav-cases-top" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
                 <a href="P-CIRCLE_LIST.html" id="nav-circles-top" class="text-text-secondary hover:text-primary transition-colors py-1">圈子</a>
-                <a href="P-QUESTION_BANK.html" id="nav-questions-top" class="text-text-secondary hover:text-primary transition-colors py-1">题库</a>
+                
             </nav>
             
             <!-- 搜索框和用户区域 -->
@@ -138,10 +138,7 @@
                     <i class="fas fa-users text-lg"></i>
                     <span>学习圈子</span>
                 </a>
-                <a href="P-QUESTION_BANK.html" id="nav-questions" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
-                    <i class="fas fa-circle-question text-lg"></i>
-                    <span>题库</span>
-                </a>
+                
                 <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
                     <i class="fas fa-eye text-lg"></i>
                     <span>AI咨询</span>
@@ -176,7 +173,7 @@
 
                 <!-- 抖音视频引入 -->
                 <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
-                    <h3 class="text-lg font-semibold text-primary mb-4">抖音视频引入</h3>
+                    <h3 class="text-lg font-semibold text-primary mb-4">视频引入</h3>
                     <div id="video-container" class="relative aspect-video max-w-2xl mx-auto bg-dark-card rounded-lg overflow-hidden border border-glass-border group cursor-pointer">
                         <!-- 视频封面和播放按钮 -->
                         <div id="video-cover" class="absolute inset-0 z-10 flex items-center justify-center">
@@ -555,10 +552,7 @@
                 window.location.href = 'P-CIRCLE_LIST.html';
             });
 
-            document.querySelector('#nav-questions-top').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = 'P-QUESTION_BANK.html';
-            });
+            
 
             // 左侧菜单点击事件
             document.querySelector('#nav-home').addEventListener('click', function(e) {
@@ -576,10 +570,7 @@
                 window.location.href = 'P-CIRCLE_LIST.html';
             });
 
-            document.querySelector('#nav-questions').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = 'P-QUESTION_BANK.html';
-            });
+            
 
 
             document.querySelector('#nav-materials').addEventListener('click', function(e) {
@@ -623,8 +614,7 @@
             // 快速操作按钮已从首页移除，此处保留供其他页复用
             var quickLearn = document.querySelector('#quick-learn');
             if (quickLearn) quickLearn.addEventListener('click', function() { window.location.href = 'P-CASE_LIST.html'; });
-            var quickPractice = document.querySelector('#quick-practice');
-            if (quickPractice) quickPractice.addEventListener('click', function() { window.location.href = 'P-QUESTION_BANK.html'; });
+            
             var quickDiscuss = document.querySelector('#quick-discuss');
             if (quickDiscuss) quickDiscuss.addEventListener('click', function() { window.location.href = 'P-CIRCLE_LIST.html'; });
 
