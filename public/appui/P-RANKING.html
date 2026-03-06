@@ -140,13 +140,17 @@
         <!-- 左侧菜单 -->
         <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
             <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-house text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
                 <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
                     <i class="fas fa-eye text-lg"></i>
                     <span>AI咨询</span>
-                </a>
-                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
-                    <i class="fas fa-book text-lg"></i>
-                    <span>学习资料</span>
                 </a>
                 <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
                     <i class="fas fa-trophy text-lg"></i>
@@ -195,9 +199,7 @@
                     <button id="tab-time" class="px-6 py-3 text-sm font-medium rounded-lg focus:outline-none tab-inactive transition-all" role="tab" aria-controls="time-content">
                         <i class="fas fa-clock mr-2"></i>学习时长榜
                     </button>
-                    <button id="tab-accuracy" class="px-6 py-3 text-sm font-medium rounded-lg focus:outline-none tab-inactive transition-all" role="tab" aria-controls="accuracy-content">
-                        <i class="fas fa-bullseye mr-2"></i>答题正确率榜
-                    </button>
+                    
                 </div>
             </section>
 
@@ -334,24 +336,7 @@
             // Initial load
             loadLeaderboard('experience');
 
-            // 搜索框焦点效果
-            const searchInput = document.querySelector('#global-search');
-            searchInput.addEventListener('focus', function() {
-                this.parentElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
-            });
-            searchInput.addEventListener('blur', function() {
-                this.parentElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
-            });
-
-            // 搜索功能
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const keyword = this.value.trim();
-                    if (keyword) {
-                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
-                    }
-                }
-            });
+ 
 
             // 标签切换功能
             const tabs = document.querySelectorAll('[role="tab"]');
