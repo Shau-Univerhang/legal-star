@@ -17,8 +17,13 @@ export async function GET(request) {
 
     if (field) query = query.eq('field', field);
     if (difficulty) query = query.eq('difficulty', difficulty);
+    
+    // Correctly handle keyword search using full-text search
     if (keyword) {
-      query = query.or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%`);
+      // Assuming you have a tsvector column `fts` on your `cases` table.
+      // Or perform a multi-field search if you don't.
+      const searchKeywords = keyword.trim().split(' ').join(' & ');
+      query = query.or(`title.ilike.%${searchKeywords}%,summary.ilike.%${searchKeywords}%,keywords.cs.{${searchKeywords}}`);
     }
 
     if (sort === 'latest') query = query.order('created_at', { ascending: false });
@@ -33,6 +38,7 @@ export async function GET(request) {
     const { data, error, count } = await query;
 
     if (error) {
+      console.error('Supabase query error:', error);
       return Response.json({ error: error.message }, { status: 500 });
     }
 
@@ -43,6 +49,7 @@ export async function GET(request) {
       pageSize,
     });
   } catch (err) {
+    console.error('API route error:', err);
     return Response.json({ error: err.message }, { status: 500 });
   }
 }

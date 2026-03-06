@@ -203,12 +203,12 @@
                                 <label class="block text-sm font-medium text-text-secondary mb-2">法律领域</label>
                                 <select id="field-filter" class="w-full px-3 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary focus:outline-none focus:border-secondary">
                                     <option value="">全部领域</option>
-                                    <option value="labor">劳动法</option>
-                                    <option value="marriage">婚姻法</option>
-                                    <option value="contract">合同法</option>
-                                    <option value="consumer">消费者权益</option>
-                                    <option value="criminal">刑法</option>
-                                    <option value="property">物权法</option>
+                                    <option value="labor_law">劳动法</option>
+                                    <option value="marriage_family">婚姻家庭</option>
+                                    <option value="contract_law">合同法</option>
+                                    <option value="consumer_rights">消费者权益</option>
+                                    <option value="criminal_law">刑法</option>
+                                    <option value="property_law">物权法</option>
                                 </select>
                             </div>
                             
@@ -237,18 +237,7 @@
                     </div>
                 </div>
                 
-                <!-- 标签筛选 -->
-                <div class="mt-6">
-                    <label class="block text-sm font-medium text-text-secondary mb-3">热门标签</label>
-                    <div class="flex flex-wrap gap-2">
-                        <button class="tag-filter px-3 py-1 bg-glass-bg border border-glass-border rounded-full text-sm text-text-secondary hover:border-secondary hover:text-secondary transition-all" data-tag="all">全部</button>
-                        <button class="tag-filter px-3 py-1 bg-glass-bg border border-glass-border rounded-full text-sm text-text-secondary hover:border-secondary hover:text-secondary transition-all" data-tag="workplace">职场纠纷</button>
-                        <button class="tag-filter px-3 py-1 bg-glass-bg border border-glass-border rounded-full text-sm text-text-secondary hover:border-secondary hover:text-secondary transition-all" data-tag="family">婚姻家庭</button>
-                        <button class="tag-filter px-3 py-1 bg-glass-bg border border-glass-border rounded-full text-sm text-text-secondary hover:border-secondary hover:text-secondary transition-all" data-tag="consumer">消费维权</button>
-                        <button class="tag-filter px-3 py-1 bg-glass-bg border border-glass-border rounded-full text-sm text-text-secondary hover:border-secondary hover:text-secondary transition-all" data-tag="contract">合同纠纷</button>
-                        <button class="tag-filter px-3 py-1 bg-glass-bg border border-glass-border rounded-full text-sm text-text-secondary hover:border-secondary hover:text-secondary transition-all" data-tag="property">房产纠纷</button>
-                    </div>
-                </div>
+
             </section>
 
             <!-- 案例列表 (loaded via API) -->
@@ -396,16 +385,7 @@
 
             loadCases();
 
-            // 全局搜索功能
-            const globalSearch = document.querySelector('#global-search');
-            globalSearch.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const keyword = this.value.trim();
-                    if (keyword) {
-                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
-                    }
-                }
-            });
+
 
             // 案例搜索功能
             const caseSearch = document.querySelector('#case-search');
@@ -442,30 +422,7 @@
             difficultyFilter.addEventListener('change', applyFilters);
             sortFilter.addEventListener('change', applyFilters);
 
-            // 标签筛选功能
-            const tagFilters = document.querySelectorAll('.tag-filter');
-            tagFilters.forEach(tag => {
-                tag.addEventListener('click', function() {
-                    // 移除所有标签的激活状态
-                    tagFilters.forEach(t => {
-                        t.classList.remove('filter-active');
-                    });
-                    
-                    // 激活当前标签
-                    this.classList.add('filter-active');
-                    
-                    const selectedTag = this.dataset.tag;
-                    if (selectedTag && selectedTag !== 'all') {
-                        caseListState.field = selectedTag === 'workplace' ? 'labor' : selectedTag === 'family' ? 'marriage' : selectedTag === 'consumer' ? 'consumer' : selectedTag === 'contract' ? 'contract' : selectedTag === 'property' ? 'property' : '';
-                        caseListState.page = 1;
-                        loadCases();
-                    } else {
-                        caseListState.field = '';
-                        caseListState.page = 1;
-                        loadCases();
-                    }
-                });
-            });
+
 
             // 分页功能
             const pageButtons = document.querySelectorAll('.page-btn');
