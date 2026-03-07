@@ -2,10 +2,6 @@ export async function POST(request) {
   try {
     const { message, conversationId, stream } = await request.json();
 
-    console.log('--- AI Chat Request Received ---');
-    console.log('Message:', message);
-    console.log('Stream:', stream);
-
     if (!message) {
       return Response.json({ error: 'Message is required' }, { status: 400 });
     }
@@ -14,18 +10,15 @@ export async function POST(request) {
     const cozeToken = process.env.COZE_API_TOKEN;
     const botId = process.env.COZE_BOT_ID;
 
-    console.log('Coze URL:', cozeUrl);
-    console.log('Bot ID:', botId);
-    console.log('Token exists:', !!cozeToken);
-
     if (!cozeToken || !botId) {
-      console.error('Coze configuration missing');
       return Response.json({ error: 'Server configuration error: Missing Coze credentials' }, { status: 500 });
     }
 
+    // Definitive fix: Combine the working message structure with the agent scene parameter
     const body = {
       bot_id: botId,
       user_id: "user_" + Date.now(),
+      // Use 'additional_messages' as it was the only structure that previously worked
       additional_messages: [
         {
           role: "user",
@@ -33,14 +26,14 @@ export async function POST(request) {
           content_type: "text",
         },
       ],
+      // The 'scene' parameter is crucial to enable agent capabilities like plugins
+      scene: "agent", 
       stream: !!stream
     };
 
     if (conversationId) {
       body.conversation_id = conversationId;
     }
-
-    console.log(`Sending request to Coze...`);
 
     const response = await fetch(cozeUrl, {
       method: "POST",
@@ -51,18 +44,12 @@ export async function POST(request) {
       body: JSON.stringify(body),
     });
 
-    console.log('Coze Response Status:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Coze API error (${response.status}):`, errorText);
       return Response.json({ error: `Coze API error: ${response.status}`, details: errorText }, { status: response.status });
     }
 
-    // Handle streaming response
     if (stream) {
-      console.log('Streaming response back to client...');
-      // Pass through the stream from Coze
       return new Response(response.body, {
         headers: {
           'Content-Type': 'text/event-stream',
@@ -70,15 +57,12 @@ export async function POST(request) {
           'Connection': 'keep-alive',
         },
       });
+    } else {
+      const data = await response.json();
+      return Response.json(data);
     }
 
-    // Handle normal JSON response
-    const data = await response.json();
-    console.log('Coze JSON Response:', JSON.stringify(data).substring(0, 200) + '...');
-    return Response.json(data);
-
   } catch (err) {
-    console.error('AI chat API error:', err);
-    return Response.json({ error: err.message, stack: err.stack }, { status: 500 });
+    return Response.json({ error: err.message }, { status: 500 });
   }
 }
