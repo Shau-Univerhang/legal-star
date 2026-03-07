@@ -6,10 +6,9 @@
     <script src="auth_guard.js"></script>
     <title>AI咨询 - 法智星</title>
     <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.js"></script>
+    <!-- Add marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
       tailwind.config = {
         theme: {
@@ -423,7 +422,10 @@
                     
                     // 追加内容
                     aiMessageContent += chunk;
-                    if (messageParagraph) messageParagraph.textContent = aiMessageContent;
+                    if (messageParagraph) {
+                        // Use marked.parse to render Markdown
+                        messageParagraph.innerHTML = marked.parse(aiMessageContent);
+                    }
                     
                     // 滚动到底部
                     chatMessages.scrollTop = chatMessages.scrollHeight;
