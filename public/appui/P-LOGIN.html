@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .form-input-focus:focus {
+            outline: none;
+            border-color: #E67E22;
+            box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.3);
+        }
+        
+        .tab-active {
+            background: rgba(230, 126, 34, 0.2);
+            color: #FFE8D6;
+            border: 1px solid rgba(230, 126, 34, 0.5);
+        }
+        
+        .tab-inactive {
+            background: rgba(44, 62, 80, 0.5);
+            color: #B2BEC3;
+            border: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .tab-inactive:hover {
+            color: #FFE8D6;
+            border-color: rgba(230, 126, 34, 0.3);
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .social-btn:hover {
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-center h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main id="main-content" class="pt-16 min-h-screen flex items-center justify-center p-6">
+        <div id="login-container" class="w-full max-w-md">
+            <!-- 登录卡片 -->
+            <div id="login-card" class="glass-card rounded-2xl p-8 shadow-xl">
+                <!-- 登录标题 -->
+                <div id="login-header" class="text-center mb-8">
+                    <h2 class="text-3xl font-bold gradient-text mb-2">欢迎回来</h2>
+                    <p class="text-text-secondary">登录您的法智星账号，继续法律学习之旅</p>
+                </div>
+
+                <!-- 登录方式切换 -->
+                <div id="login-method-tabs" class="flex mb-6 bg-dark-card rounded-lg p-1">
+                    <button id="tab-password" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-active" role="tab">
+                        密码登录
+                    </button>
+                    <button id="tab-code" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-inactive" role="tab">
+                        验证码登录
+                    </button>
+                </div>
+
+                <!-- 登录表单 -->
+                <form id="login-form" class="space-y-6">
+                    <!-- 登录方式选择 -->
+                    <div id="login-type-selector" class="flex space-x-2 mb-6 hidden"></div>
+
+                    <!-- 手机号/邮箱输入框 -->
+                    <div id="account-input-group" class="space-y-2">
+                        <label for="account-input" class="block text-sm font-medium text-text-secondary">邮箱</label>
+                        <input type="email" id="account-input" name="account" 
+                               class="w-full px-4 py-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary form-input-focus transition-all"
+                               placeholder="请输入邮箱地址" required>
+                    </div>
+
+                    <!-- 密码输入框（密码登录时显示） -->
+                    <div id="password-input-group" class="space-y-2">
+                        <label for="password-input" class="block text-sm font-medium text-text-secondary">密码</label>
+                        <div class="relative">
+                            <input type="password" id="password-input" name="password" 
+                                   class="w-full px-4 py-3 pr-12 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary form-input-focus transition-all"
+                                   placeholder="请输入密码" required>
+                            <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-primary">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 验证码输入框（验证码登录时显示） -->
+                    <div id="code-input-group" class="space-y-2 hidden">
+                        <label for="code-input" class="block text-sm font-medium text-text-secondary">验证码</label>
+                        <div class="flex space-x-3">
+                            <input type="text" id="code-input" name="code" 
+                                   class="flex-1 px-4 py-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary form-input-focus transition-all"
+                                   placeholder="请输入验证码" maxlength="6">
+                            <button type="button" id="get-code-btn" class="px-4 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-all whitespace-nowrap">
+                                获取验证码
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 忘记密码链接 -->
+                    <div id="forgot-password-section" class="text-right">
+                        <a href="#" id="forgot-password-link" class="text-sm text-secondary hover:text-opacity-80 transition-colors">
+                            忘记密码？
+                        </a>
+                    </div>
+
+                    <!-- 登录按钮 -->
+                    <button type="submit" id="login-submit-btn" 
+                            class="w-full py-3 bg-gradient-to-r from-secondary to-accent text-white font-medium rounded-lg hover:opacity-90 transition-all transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-sign-in-alt mr-2"></i>登录
+                    </button>
+                </form>
+
+                <!-- 分割线 -->
+                <div id="divider" class="my-6"></div>
+
+                <!-- 第三方登录 -->
+                <div id="social-login" class="space-y-4 hidden">
+                    <div class="text-center text-sm text-text-secondary mb-4">使用第三方账号登录</div>
+                    <div class="flex justify-center space-x-4">
+                        <button id="wechat-login" class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white social-btn">
+                            <i class="fab fa-weixin text-xl"></i>
+                        </button>
+                        <button id="qq-login" class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white social-btn">
+                            <i class="fab fa-qq text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 注册链接 -->
+                <div id="register-section" class="text-center mt-8">
+                    <span class="text-text-secondary">还没有账号？</span>
+                    <a href="P-REGISTER.html" id="register-link" class="text-secondary hover:text-opacity-80 transition-colors ml-1">
+                        立即注册
+                    </a>
+                </div>
+            </div>
+
+            <!-- 装饰元素 -->
+            <div id="decorative-elements" class="absolute inset-0 pointer-events-none overflow-hidden">
+                <div class="absolute top-20 left-10 w-32 h-32 bg-secondary bg-opacity-10 rounded-full floating-animation"></div>
+                <div class="absolute bottom-20 right-10 w-24 h-24 bg-accent bg-opacity-10 rounded-full floating-animation" style="animation-delay: -2s;"></div>
+                <div class="absolute top-1/2 left-1/4 w-16 h-16 bg-primary bg-opacity-10 rounded-full floating-animation" style="animation-delay: -4s;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 登录方式切换（密码/验证码）
+            const tabPassword = document.querySelector('#tab-password');
+            const tabCode = document.querySelector('#tab-code');
+            const passwordGroup = document.querySelector('#password-input-group');
+            const codeGroup = document.querySelector('#code-input-group');
+            const forgotPasswordSection = document.querySelector('#forgot-password-section');
+
+            if (tabPassword) tabPassword.addEventListener('click', function() {
+                // 切换标签样式
+                tabPassword.classList.remove('tab-inactive');
+                tabPassword.classList.add('tab-active');
+                tabCode.classList.remove('tab-active');
+                tabCode.classList.add('tab-inactive');
+                
+                // 显示密码登录相关元素
+                passwordGroup.classList.remove('hidden');
+                codeGroup.classList.add('hidden');
+                forgotPasswordSection.classList.remove('hidden');
+                
+                // 隐藏验证码登录相关元素
+                document.querySelector('#get-code-btn').classList.add('hidden');
+            });
+
+            if (tabCode) tabCode.addEventListener('click', function() {
+                // 切换标签样式
+                tabCode.classList.remove('tab-inactive');
+                tabCode.classList.add('tab-active');
+                tabPassword.classList.remove('tab-active');
+                tabPassword.classList.add('tab-inactive');
+                
+                // 显示验证码登录相关元素
+                codeGroup.classList.remove('hidden');
+                passwordGroup.classList.add('hidden');
+                forgotPasswordSection.classList.add('hidden');
+                
+                // 显示获取验证码按钮
+                document.querySelector('#get-code-btn').classList.remove('hidden');
+            });
+
+            // 登录类型切换（手机号/邮箱）
+            const typePhone = document.querySelector('#type-phone');
+            const typeEmail = document.querySelector('#type-email');
+            const accountLabel = document.querySelector('#account-label');
+            const accountInput = document.querySelector('#account-input');
+
+            if (typePhone) typePhone.addEventListener('click', function() {
+                // 切换按钮样式
+                typePhone.classList.add('bg-secondary', 'bg-opacity-20', 'text-primary');
+                typePhone.classList.remove('text-text-secondary');
+                typeEmail.classList.remove('bg-secondary', 'bg-opacity-20', 'text-primary');
+                typeEmail.classList.add('text-text-secondary');
+                
+                // 更新输入框
+                accountLabel.textContent = '手机号';
+                accountInput.placeholder = '请输入手机号';
+                accountInput.type = 'tel';
+            });
+
+            if (typeEmail) typeEmail.addEventListener('click', function() {
+                // 切换按钮样式
+                typeEmail.classList.add('bg-secondary', 'bg-opacity-20', 'text-primary');
+                typeEmail.classList.remove('text-text-secondary');
+                typePhone.classList.remove('bg-secondary', 'bg-opacity-20', 'text-primary');
+                typePhone.classList.add('text-text-secondary');
+                
+                // 更新输入框
+                accountLabel.textContent = '邮箱';
+                accountInput.placeholder = '请输入邮箱地址';
+                accountInput.type = 'email';
+            });
+
+            // 密码显示/隐藏切换
+            const togglePassword = document.querySelector('#toggle-password');
+            const passwordInput = document.querySelector('#password-input');
+
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // 切换图标
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                } else {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            });
+
+            // 获取验证码功能
+            let countdown = 0;
+            const getCodeBtn = document.querySelector('#get-code-btn');
+
+            if (getCodeBtn) getCodeBtn.addEventListener('click', function() {
+                const account = accountInput.value.trim();
+                
+                if (!account) {
+                    alert('请先输入手机号或邮箱');
+                    return;
+                }
+
+                // 简单的格式验证
+                const isPhone = accountInput.type === 'tel';
+                const isValid = isPhone 
+                    ? /^1[3-9]\d{9}$/.test(account)
+                    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account);
+
+                if (!isValid) {
+                    alert(isPhone ? '请输入正确的手机号' : '请输入正确的邮箱地址');
+                    return;
+                }
+
+                // 开始倒计时
+                countdown = 60;
+                this.disabled = true;
+                this.textContent = `${countdown}s`;
+                
+                const timer = setInterval(() => {
+                    countdown--;
+                    this.textContent = `${countdown}s`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        this.disabled = false;
+                        this.textContent = '获取验证码';
+                    }
+                }, 1000);
+
+                // 调用发送验证码API
+                if (window.auth && window.auth.sendCode) {
+                    window.auth.sendCode(account)
+                        .then(() => {
+                            console.log('验证码发送成功');
+                            alert('验证码已发送，请查收');
+                        })
+                        .catch(err => {
+                            console.error('发送失败:', err);
+                            alert('验证码发送失败: ' + err.message);
+                            // 重置倒计时
+                            clearInterval(timer);
+                            this.disabled = false;
+                            this.textContent = '获取验证码';
+                        });
+                } else {
+                    console.log('发送验证码到:', account);
+                    alert('API未就绪，模拟发送成功');
+                }
+            });
+
+            // 表单提交
+            const loginForm = document.querySelector('#login-form');
+            
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const accountInput = document.querySelector('#account-input');
+                const passwordInput = document.querySelector('#password-input');
+                const codeInput = document.querySelector('#code-input');
+                
+                const account = accountInput.value.trim();
+                const isPasswordLogin = !document.querySelector('#password-input-group').classList.contains('hidden');
+                
+                if (!account) {
+                    alert('请输入账号');
+                    return;
+                }
+
+                // 统一的登录处理函数
+                const handleLogin = (loginPromise) => {
+                    const submitBtn = document.querySelector('#login-submit-btn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>登录中...';
+
+                    loginPromise
+                        .then(function(data) {
+                            alert('登录成功！');
+                            window.location.href = 'P-HOME.html';
+                        })
+                        .catch(function(err) {
+                            alert('登录失败: ' + err.message);
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        });
+                };
+
+                if (isPasswordLogin) {
+                    const password = passwordInput.value.trim();
+                    if (!password) {
+                        alert('请输入密码');
+                        return;
+                    }
+                    
+                    // Simple email validation regex
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(account)) {
+                        alert('目前仅支持邮箱登录，请输入有效的邮箱地址');
+                        return;
+                    }
+
+                    if (window.auth) {
+                        handleLogin(window.auth.login(account, password));
+                    } else {
+                        alert('Auth module not loaded.');
+                    }
+
+                } else {
+                    // 验证码登录
+                    const code = codeInput.value.trim();
+                    if (!code) {
+                        alert('请输入验证码');
+                        return;
+                    }
+
+                    if (window.auth && window.auth.loginWithCode) {
+                        handleLogin(window.auth.loginWithCode(account, code));
+                    } else {
+                        alert('验证码登录功能未加载');
+                    }
+                }
+            });
+
+            // 忘记密码链接
+            document.querySelector('#forgot-password-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('忘记密码功能开发中...');
+                // 实际项目中应该跳转到忘记密码页面
+            });
+
+            // 注册链接
+            document.querySelector('#register-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-REGISTER.html';
+            });
+
+            // 第三方登录
+            if (document.querySelector('#wechat-login')) document.querySelector('#wechat-login').addEventListener('click', function() {
+                console.log('微信登录功能开发中...');
+                alert('微信登录功能开发中...');
+            });
+
+            if (document.querySelector('#qq-login')) document.querySelector('#qq-login').addEventListener('click', function() {
+                console.log('QQ登录功能开发中...');
+                alert('QQ登录功能开发中...');
+            });
+
+            // 输入框焦点效果
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

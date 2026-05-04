@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="auth_guard.js"></script>
+    <title>个人学习中心 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-sidebar {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #E67E22, #34495E);
+            border-radius: 3px;
+        }
+        
+        .achievement-unlocked {
+            background: linear-gradient(135deg, rgba(230, 126, 34, 0.2), rgba(52, 73, 94, 0.2));
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+        
+        .achievement-locked {
+            background: rgba(44, 62, 80, 0.3);
+            border: 1px solid rgba(178, 190, 195, 0.2);
+            opacity: 0.6;
+        }
+        
+        .chart-bar {
+            background: linear-gradient(180deg, #E67E22, #34495E);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-bar:hover {
+            background: linear-gradient(180deg, #F39C12, #2C3E50);
+            transform: scaleY(1.05);
+        }
+        
+        .heatmap-cell {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        
+        .heatmap-0 { background-color: rgba(44, 62, 80, 0.3); }
+        .heatmap-1 { background-color: rgba(230, 126, 34, 0.3); }
+        .heatmap-2 { background-color: rgba(230, 126, 34, 0.5); }
+        .heatmap-3 { background-color: rgba(230, 126, 34, 0.7); }
+        .heatmap-4 { background-color: rgba(230, 126, 34, 0.9); }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-between h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+            
+            <!-- 主导航 -->
+            <nav id="main-nav" class="hidden md:flex items-center space-x-8">
+                <a href="P-HOME.html" class="text-text-secondary hover:text-primary transition-colors py-1">首页</a>
+                <a href="P-CASE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
+                <a href="P-CIRCLE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">圈子</a>
+                
+            </nav>
+            
+            <!-- 搜索框和用户区域 -->
+            <div id="user-section" class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden lg:block">
+                    <input type="text" id="global-search" placeholder="搜索案例、知识点..." 
+                           class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+                
+                <!-- 消息通知 -->
+                <button id="notification-btn" class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
+                </button>
+                
+                <!-- 用户头像 -->
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img src="https://s.coze.cn/image/ELUKBkvCD4U/" 
+                         alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
+                    <span class="hidden md:block text-sm">学法者</span>
+                    <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- 左侧菜单 -->
+        <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
+            <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-house text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="P-CIRCLE_LIST.html" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                
+                <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-eye text-lg"></i>
+                    <span>AI咨询</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
+
+                <div class="border-t border-dark-border my-4"></div>
+
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-gear text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main id="main-content" class="flex-1 p-8 min-h-screen">
+            <!-- 页面头部 -->
+            <header id="page-header" class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-6">
+                        <div class="relative">
+                            <img src="https://s.coze.cn/image/IKc00gj7uVY/" 
+                                 alt="用户头像" class="w-20 h-20 rounded-full border-4 border-secondary">
+                            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-secondary rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold gradient-text mb-2">学法者</h2>
+                            <div class="flex items-center space-x-4">
+                                <span class="px-3 py-1 bg-secondary bg-opacity-20 text-secondary rounded-full text-sm font-medium">法律达人 Lv.5</span>
+                                <span class="text-text-secondary">ID: LT2024001</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="edit-profile-btn" class="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-all">
+                        <i class="fas fa-edit mr-2"></i>编辑资料
+                    </button>
+                </div>
+            </header>
+
+            <!-- 学习概览区 -->
+            <section id="learning-overview" class="glass-card rounded-xl p-6 mb-8 shadow-lg">
+                <h3 class="text-xl font-semibold text-primary mb-6 flex items-center">
+                    <i class="fas fa-chart-line mr-2 text-secondary"></i>学习概览
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div id="stat-total-time" class="text-center p-4 bg-dark rounded-lg">
+                        <div class="text-3xl font-bold text-secondary mb-2">128</div>
+                        <div class="text-sm text-text-secondary">总学习时长(小时)</div>
+                    </div>
+                    <div id="stat-learned-cases" class="text-center p-4 bg-dark rounded-lg">
+                        <div class="text-3xl font-bold text-accent mb-2">45</div>
+                        <div class="text-sm text-text-secondary">已学案例数</div>
+                    </div>
+                    <div id="stat-accuracy" class="text-center p-4 bg-dark rounded-lg">
+                        <div class="text-3xl font-bold text-primary mb-2">87%</div>
+                        <div class="text-sm text-text-secondary">答题正确率</div>
+                    </div>
+                    <div id="stat-streak-days" class="text-center p-4 bg-dark rounded-lg">
+                        <div class="text-3xl font-bold text-secondary mb-2">12</div>
+                        <div class="text-sm text-text-secondary">连续学习天数</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 法治段位进度 -->
+            <section id="rank-progress" class="glass-card rounded-xl p-6 mb-8 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold text-primary flex items-center">
+                        <i class="fas fa-trophy mr-2 text-secondary"></i>段位进度
+                    </h3>
+                    <button id="view-ranking-btn" class="text-secondary hover:text-primary transition-colors text-sm">
+                        查看排行榜 <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-text-secondary">法律达人</span>
+                            <span class="text-sm text-text-secondary">法智星大师</span>
+                        </div>
+                        <div class="w-full bg-dark-card rounded-full h-3 mb-4 p-0.5">
+                            <div class="progress-bar h-full rounded-full" style="width: 65%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-text-secondary">当前经验: 1,650</span>
+                            <span class="text-text-secondary">还需: 850 经验升级</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-crown text-white text-xl"></i>
+                        </div>
+                        <div class="text-sm text-text-secondary">Lv.5</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 已解锁成就 -->
+            <section id="achievements" class="glass-card rounded-xl p-6 mb-8 shadow-lg">
+                <h3 class="text-xl font-semibold text-primary mb-6 flex items-center">
+                    <i class="fas fa-medal mr-2 text-secondary"></i>我的成就
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div id="achievement-1" class="achievement-unlocked rounded-lg p-4 text-center cursor-pointer hover-glow">
+                        <div class="w-12 h-12 bg-gradient-to-br from-secondary to-accent rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-graduation-cap text-white"></i>
+                        </div>
+                        <div class="text-xs text-primary">新手入门</div>
+                        <div class="text-xs text-text-secondary">完成首个案例</div>
+                    </div>
+                    
+                    <div id="achievement-2" class="achievement-unlocked rounded-lg p-4 text-center cursor-pointer hover-glow">
+                        <div class="w-12 h-12 bg-gradient-to-br from-accent to-secondary rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-fire text-white"></i>
+                        </div>
+                        <div class="text-xs text-primary">学习达人</div>
+                        <div class="text-xs text-text-secondary">累计学习100小时</div>
+                    </div>
+                    
+                    <div id="achievement-3" class="achievement-unlocked rounded-lg p-4 text-center cursor-pointer hover-glow">
+                        <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-brain text-dark"></i>
+                        </div>
+                        <div class="text-xs text-primary">答题高手</div>
+                        <div class="text-xs text-text-secondary">正确率达80%</div>
+                    </div>
+                    
+                    <div id="achievement-4" class="achievement-locked rounded-lg p-4 text-center cursor-pointer">
+                        <div class="w-12 h-12 bg-dark-card rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-lock text-text-secondary"></i>
+                        </div>
+                        <div class="text-xs text-text-secondary">社交达人</div>
+                        <div class="text-xs text-text-secondary">加入5个圈子</div>
+                    </div>
+                    
+                    <div id="achievement-5" class="achievement-locked rounded-lg p-4 text-center cursor-pointer">
+                        <div class="w-12 h-12 bg-dark-card rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-lock text-text-secondary"></i>
+                        </div>
+                        <div class="text-xs text-text-secondary">坚持不懈</div>
+                        <div class="text-xs text-text-secondary">连续学习30天</div>
+                    </div>
+                    
+                    <div id="achievement-6" class="achievement-locked rounded-lg p-4 text-center cursor-pointer">
+                        <div class="w-12 h-12 bg-dark-card rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-lock text-text-secondary"></i>
+                        </div>
+                        <div class="text-xs text-text-secondary">法智星大师</div>
+                        <div class="text-xs text-text-secondary">达到最高段位</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 收藏案例列表 -->
+            <section id="favorite-cases" class="glass-card rounded-xl p-6 mb-8 shadow-lg">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-primary flex items-center">
+                        <i class="fas fa-heart mr-2 text-secondary"></i>收藏案例
+                    </h3>
+                    <button id="view-all-favorites" class="text-secondary hover:text-primary transition-colors text-sm">
+                        查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div id="favorite-case-1" class="flex items-center justify-between p-4 bg-dark-card rounded-lg hover-glow cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                                <i class="fas fa-gavel text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-primary">劳动合同纠纷案例</div>
+                                <div class="text-sm text-text-secondary">劳动法 · 3天前学习</div>
+                            </div>
+                        </div>
+                        <button id="unfavorite-1" class="text-text-secondary hover:text-red-400 transition-colors">
+                            <i class="fas fa-heart-broken"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="favorite-case-2" class="flex items-center justify-between p-4 bg-dark-card rounded-lg hover-glow cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-accent to-secondary rounded-lg flex items-center justify-center">
+                                <i class="fas fa-heart text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-primary">婚姻财产分割案例</div>
+                                <div class="text-sm text-text-secondary">婚姻法 · 1周前学习</div>
+                            </div>
+                        </div>
+                        <button id="unfavorite-2" class="text-text-secondary hover:text-red-400 transition-colors">
+                            <i class="fas fa-heart-broken"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="favorite-case-3" class="flex items-center justify-between p-4 bg-dark-card rounded-lg hover-glow cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shopping-cart text-dark"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-primary">消费者维权案例</div>
+                                <div class="text-sm text-text-secondary">消费者权益 · 2周前学习</div>
+                            </div>
+                        </div>
+                        <button id="unfavorite-3" class="text-text-secondary hover:text-red-400 transition-colors">
+                            <i class="fas fa-heart-broken"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 学习数据统计 -->
+            <section id="learning-stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- 学习时长趋势 -->
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold text-primary mb-6 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-secondary"></i>学习时长趋势
+                    </h3>
+                    <div class="h-64 flex items-end justify-between space-x-2 px-4">
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 60%"></div>
+                            <span class="text-xs text-text-secondary">周一</span>
+                            <span class="text-xs text-primary">2.5h</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 80%"></div>
+                            <span class="text-xs text-text-secondary">周二</span>
+                            <span class="text-xs text-primary">3.2h</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 45%"></div>
+                            <span class="text-xs text-text-secondary">周三</span>
+                            <span class="text-xs text-primary">1.8h</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 90%"></div>
+                            <span class="text-xs text-text-secondary">周四</span>
+                            <span class="text-xs text-primary">3.8h</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 70%"></div>
+                            <span class="text-xs text-text-secondary">周五</span>
+                            <span class="text-xs text-primary">2.9h</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 55%"></div>
+                            <span class="text-xs text-text-secondary">周六</span>
+                            <span class="text-xs text-primary">2.2h</span>
+                        </div>
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="chart-bar w-8" style="height: 40%"></div>
+                            <span class="text-xs text-text-secondary">周日</span>
+                            <span class="text-xs text-primary">1.6h</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 知识点掌握度热力图 -->
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold text-primary mb-6 flex items-center">
+                        <i class="fas fa-project-diagram mr-2 text-secondary"></i>知识点掌握度
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-primary">民法</span>
+                                <span class="text-sm text-text-secondary">85%</span>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1">
+                                <div class="heatmap-cell heatmap-4" title="合同法: 精通"></div>
+                                <div class="heatmap-cell heatmap-3" title="物权法: 掌握"></div>
+                                <div class="heatmap-cell heatmap-4" title="侵权责任法: 精通"></div>
+                                <div class="heatmap-cell heatmap-2" title="婚姻法: 了解"></div>
+                                <div class="heatmap-cell heatmap-3" title="继承法: 掌握"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-primary">刑法</span>
+                                <span class="text-sm text-text-secondary">72%</span>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1">
+                                <div class="heatmap-cell heatmap-3" title="总则: 掌握"></div>
+                                <div class="heatmap-cell heatmap-2" title="危害公共安全罪: 了解"></div>
+                                <div class="heatmap-cell heatmap-3" title="侵犯人身权利罪: 掌握"></div>
+                                <div class="heatmap-cell heatmap-1" title="侵犯财产罪: 入门"></div>
+                                <div class="heatmap-cell heatmap-2" title="贪污贿赂罪: 了解"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-primary">行政法</span>
+                                <span class="text-sm text-text-secondary">60%</span>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1">
+                                <div class="heatmap-cell heatmap-2" title="行政处罚法: 了解"></div>
+                                <div class="heatmap-cell heatmap-1" title="行政许可法: 入门"></div>
+                                <div class="heatmap-cell heatmap-2" title="行政强制法: 了解"></div>
+                                <div class="heatmap-cell heatmap-0" title="行政复议法: 未掌握"></div>
+                                <div class="heatmap-cell heatmap-1" title="国家赔偿法: 入门"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-center space-x-4 mt-6">
+                            <div class="flex items-center space-x-1">
+                                <div class="heatmap-cell heatmap-0"></div>
+                                <span class="text-xs text-text-secondary">未掌握</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="heatmap-cell heatmap-1"></div>
+                                <span class="text-xs text-text-secondary">入门</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="heatmap-cell heatmap-2"></div>
+                                <span class="text-xs text-text-secondary">了解</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="heatmap-cell heatmap-3"></div>
+                                <span class="text-xs text-text-secondary">掌握</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="heatmap-cell heatmap-4"></div>
+                                <span class="text-xs text-text-secondary">精通</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 搜索框焦点效果
+            const searchInput = document.querySelector('#global-search');
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+
+            // 搜索功能
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+                    }
+                }
+            });
+
+            // 导航菜单点击事件
+            document.querySelector('#nav-home').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#nav-cases').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#nav-circles').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CIRCLE_LIST.html';
+            });
+
+            
+
+
+            document.querySelector('#nav-ranking').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-RANKING.html';
+            });
+
+            document.querySelector('#nav-settings').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 查看排行榜按钮
+            document.querySelector('#view-ranking-btn').addEventListener('click', function() {
+                window.location.href = 'P-RANKING.html';
+            });
+
+            // 编辑资料按钮
+            document.querySelector('#edit-profile-btn').addEventListener('click', function() {
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 收藏案例点击事件
+            document.querySelector('#favorite-case-1').addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    window.location.href = 'P-CASE_DETAIL.html?caseId=case1';
+                }
+            });
+
+            document.querySelector('#favorite-case-2').addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    window.location.href = 'P-CASE_DETAIL.html?caseId=case2';
+                }
+            });
+
+            document.querySelector('#favorite-case-3').addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    window.location.href = 'P-CASE_DETAIL.html?caseId=case3';
+                }
+            });
+
+            // 取消收藏按钮
+            document.querySelector('#unfavorite-1').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm('确定要取消收藏这个案例吗？')) {
+                    console.log('取消收藏案例1');
+                    // 这里可以添加取消收藏的逻辑
+                }
+            });
+
+            document.querySelector('#unfavorite-2').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm('确定要取消收藏这个案例吗？')) {
+                    console.log('取消收藏案例2');
+                    // 这里可以添加取消收藏的逻辑
+                }
+            });
+
+            document.querySelector('#unfavorite-3').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm('确定要取消收藏这个案例吗？')) {
+                    console.log('取消收藏案例3');
+                    // 这里可以添加取消收藏的逻辑
+                }
+            });
+
+            // 查看全部收藏
+            document.querySelector('#view-all-favorites').addEventListener('click', function() {
+                console.log('查看全部收藏案例');
+                // 这里可以跳转到收藏案例列表页或展开显示更多
+            });
+
+            // 成就点击事件
+            document.querySelector('#achievement-1').addEventListener('click', function() {
+                alert('新手入门：完成首个案例学习，恭喜您开始法律学习之旅！');
+            });
+
+            document.querySelector('#achievement-2').addEventListener('click', function() {
+                alert('学习达人：累计学习100小时，您的坚持值得称赞！');
+            });
+
+            document.querySelector('#achievement-3').addEventListener('click', function() {
+                alert('答题高手：答题正确率达到80%，您的法律知识掌握得很扎实！');
+            });
+
+            // 热力图单元格悬停效果
+            const heatmapCells = document.querySelectorAll('.heatmap-cell');
+            heatmapCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.2)';
+                });
+                cell.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // 消息通知
+            document.querySelector('#notification-btn').addEventListener('click', function() {
+                console.log('查看消息通知');
+                // 这里可以显示消息通知弹窗
+            });
+
+            // 用户头像点击
+            document.querySelector('#user-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html';
+            });
+        });
+    </script>
+</body>
+</html>

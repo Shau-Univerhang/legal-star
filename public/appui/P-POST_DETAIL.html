@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="auth_guard.js"></script>
+    <title>帖子详情 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-sidebar {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .comment-input:focus {
+            outline: none;
+            border-color: #E67E22;
+            box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2);
+        }
+        
+        .like-button:hover {
+            color: #E67E22;
+            transform: scale(1.1);
+            transition: all 0.2s ease;
+        }
+        
+        .reply-button:hover {
+            color: #34495E;
+            transition: color 0.2s ease;
+        }
+        
+        .author-avatar:hover {
+            border-color: #E67E22;
+            transition: border-color 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-between h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+            
+            <!-- 主导航 -->
+            <nav id="main-nav" class="hidden md:flex items-center space-x-8">
+                <a href="P-HOME.html" class="text-text-secondary hover:text-primary transition-colors py-1">首页</a>
+                <a href="P-CASE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
+                <a href="P-CIRCLE_LIST.html" class="text-primary font-medium border-b-2 border-primary py-1">圈子</a>
+                
+            </nav>
+            
+            <!-- 搜索框和用户区域 -->
+            <div id="user-section" class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden lg:block">
+                    <input type="text" id="global-search" placeholder="搜索案例、知识点..." 
+                           class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+                
+                <!-- 消息通知 -->
+                <button id="notification-btn" class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
+                </button>
+                
+                <!-- 用户头像 -->
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img src="https://s.coze.cn/image/B2M728Wm9EU/" 
+                         alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
+                    <span class="hidden md:block text-sm">学法者</span>
+                    <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- 左侧菜单 -->
+        <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
+            <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-house text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="P-CIRCLE_LIST.html" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                
+                <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-eye text-lg"></i>
+                    <span>AI咨询</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
+
+                <div class="border-t border-dark-border my-4"></div>
+
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-gear text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main id="main-content" class="flex-1 p-8 min-h-screen">
+            <!-- 页面头部 -->
+            <header id="page-header" class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 id="post-title" class="text-3xl font-bold gradient-text mb-2">劳动合同纠纷中的加班费计算问题</h2>
+                        <nav id="breadcrumb" class="text-sm text-text-secondary">
+                            <a href="P-HOME.html" class="hover:text-primary transition-colors">首页</a>
+                            <span class="mx-2">/</span>
+                            <a href="P-CIRCLE_LIST.html" class="hover:text-primary transition-colors">学习圈子</a>
+                            <span class="mx-2">/</span>
+                            <a href="P-CIRCLE_DETAIL.html?circleId=workplace-rights" id="circle-link" class="hover:text-primary transition-colors">职场权益保护圈</a>
+                            <span class="mx-2">/</span>
+                            <span class="text-primary">劳动合同纠纷中的加班费计算问题</span>
+                        </nav>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="like-btn" class="flex items-center space-x-2 px-4 py-2 bg-glass-bg border border-glass-border rounded-lg hover:border-secondary transition-all like-button">
+                            <i class="fas fa-heart text-lg"></i>
+                            <span id="like-count">128</span>
+                        </button>
+                        <button id="favorite-btn" class="flex items-center space-x-2 px-4 py-2 bg-glass-bg border border-glass-border rounded-lg hover:border-secondary transition-all">
+                            <i class="fas fa-bookmark text-lg"></i>
+                            <span>收藏</span>
+                        </button>
+                        <button id="share-btn" class="flex items-center space-x-2 px-4 py-2 bg-glass-bg border border-glass-border rounded-lg hover:border-secondary transition-all">
+                            <i class="fas fa-share text-lg"></i>
+                            <span>分享</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 作者信息 -->
+                <div id="author-info" class="glass-card rounded-xl p-6">
+                    <div class="flex items-center space-x-4">
+                        <img id="author-avatar" src="https://s.coze.cn/image/dsHTBFS0_X4/" alt="作者头像" 
+                             class="w-12 h-12 rounded-full border-2 border-glass-border author-avatar cursor-pointer" data-category="人物">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2">
+                                <span id="author-name" class="font-semibold text-primary cursor-pointer hover:text-secondary transition-colors">劳动法专家</span>
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">法律达人</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-text-secondary mt-1">
+                                <span><i class="fas fa-clock mr-1"></i><span id="post-time">2024-01-15 14:30</span></span>
+                                <span><i class="fas fa-eye mr-1"></i><span id="view-count">1.2k</span> 阅读</span>
+                                <span><i class="fas fa-comment mr-1"></i><span id="comment-count">45</span> 评论</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-text-secondary">所属圈子</div>
+                            <div class="text-sm font-medium text-secondary">职场权益保护圈</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 帖子内容区 -->
+            <section id="post-content" class="glass-card rounded-xl p-8 mb-8">
+                <div class="prose prose-invert max-w-none">
+                    <p class="text-lg text-text-primary mb-6 leading-relaxed">
+                        最近收到很多关于加班费计算的咨询，今天想和大家详细分享一下劳动合同中加班费的计算标准和常见问题。加班费是劳动者在法定工作时间之外提供劳动所应获得的报酬，这是劳动法明确规定的劳动者权益。
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-primary mb-4">一、加班费的计算标准</h3>
+                    
+                    <div class="bg-dark-card rounded-lg p-6 mb-6 border-l-4 border-secondary">
+                        <h4 class="font-semibold text-primary mb-3">1. 工作日加班</h4>
+                        <p class="text-text-secondary mb-4">
+                            工作日加班是指在标准工作时间（通常为8小时）之外延长工作时间。根据《劳动法》第四十四条规定，工作日加班的工资报酬为不低于工资的150%。
+                        </p>
+                        <p class="text-text-secondary mb-4">
+                            <strong>计算公式：</strong> 小时工资 × 150% × 加班小时数
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card rounded-lg p-6 mb-6 border-l-4 border-accent">
+                        <h4 class="font-semibold text-primary mb-3">2. 休息日加班</h4>
+                        <p class="text-text-secondary mb-4">
+                            休息日加班是指在周六、周日等法定休息日工作。休息日加班的工资报酬为不低于工资的200%。如果企业安排补休，则可以不支付加班费。
+                        </p>
+                        <p class="text-text-secondary mb-4">
+                            <strong>计算公式：</strong> 小时工资 × 200% × 加班小时数
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card rounded-lg p-6 mb-6 border-l-4 border-primary">
+                        <h4 class="font-semibold text-primary mb-3">3. 法定节假日加班</h4>
+                        <p class="text-text-secondary mb-4">
+                            法定节假日加班是指在国家规定的法定节假日（如春节、国庆节等）工作。法定节假日加班的工资报酬为不低于工资的300%，且不能以补休代替。
+                        </p>
+                        <p class="text-text-secondary mb-4">
+                            <strong>计算公式：</strong> 小时工资 × 300% × 加班小时数
+                        </p>
+                    </div>
+                    
+                    <h3 class="text-xl font-semibold text-primary mb-4">二、常见问题解答</h3>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="border border-dark-border rounded-lg p-4">
+                            <h4 class="font-medium text-primary mb-2">Q: 加班费的计算基数如何确定？</h4>
+                            <p class="text-text-secondary">
+                                A: 加班费的计算基数一般以劳动合同中约定的工资标准为准。如果没有约定或约定不明确，应以劳动者实际工资收入的70%作为计算基数，但不得低于当地最低工资标准。
+                            </p>
+                        </div>
+                        
+                        <div class="border border-dark-border rounded-lg p-4">
+                            <h4 class="font-medium text-primary mb-2">Q: 企业不支付加班费怎么办？</h4>
+                            <p class="text-text-secondary">
+                                A: 劳动者可以向劳动监察部门投诉，或者申请劳动仲裁。根据《劳动合同法》第八十五条规定，企业拖欠加班费的，劳动行政部门可以责令限期支付，逾期不支付的，责令按应付金额50%以上100%以下的标准向劳动者加付赔偿金。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-text-primary leading-relaxed">
+                        希望以上内容对大家有所帮助。如果有具体的案例需要分析，欢迎在评论区留言讨论。维护劳动者合法权益，我们一起努力！
+                    </p>
+                </div>
+            </section>
+
+            <!-- 评论区 -->
+            <section id="comments-section" class="glass-card rounded-xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-primary flex items-center">
+                        <i class="fas fa-comments-alt mr-2 text-secondary"></i>
+                        评论区 <span id="total-comments" class="ml-2 text-sm text-text-secondary">(45)</span>
+                    </h3>
+                    <div class="flex space-x-2">
+                        <button id="sort-latest" class="px-3 py-1 text-sm bg-secondary text-white rounded-md">最新</button>
+                        <button id="sort-hottest" class="px-3 py-1 text-sm bg-glass-bg text-text-secondary rounded-md hover:bg-dark-border transition-colors">最热</button>
+                    </div>
+                </div>
+                
+                <!-- 评论输入框 -->
+                <div id="comment-input-section" class="mb-8">
+                    <div class="flex space-x-4">
+                        <img src="https://s.coze.cn/image/VJwQh-JR0GU/" alt="我的头像" 
+                             class="w-10 h-10 rounded-full border-2 border-glass-border" data-category="人物">
+                        <div class="flex-1">
+                            <textarea id="comment-input" placeholder="说说你的看法..." 
+                                      class="w-full p-4 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary comment-input resize-none"
+                                      rows="3"></textarea>
+                            <div class="flex items-center justify-end mt-3 space-x-3">
+                                <span class="text-sm text-text-secondary">支持@其他用户</span>
+                                <button id="submit-comment" class="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-all">
+                                    发布评论
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 评论列表 -->
+                <div id="comments-list" class="space-y-6">
+                    <!-- 评论项 1 -->
+                    <div class="comment-item border-b border-dark-border pb-6 last:border-b-0 last:pb-0">
+                        <div class="flex space-x-4">
+                            <img class="comment-author-avatar w-10 h-10 rounded-full border-2 border-glass-border author-avatar cursor-pointer" 
+                                 src="https://s.coze.cn/image/1QlLQy898Z4/" alt="用户头像" data-user-id="user1" data-category="人物">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="comment-author-name font-medium text-primary cursor-pointer hover:text-secondary transition-colors" 
+                                          data-user-id="user1">职场小白</span>
+                                    <span class="text-xs bg-primary bg-opacity-20 text-primary px-2 py-1 rounded">学法者</span>
+                                    <span class="text-sm text-text-secondary">2小时前</span>
+                                </div>
+                                <p class="text-text-primary mb-3 leading-relaxed">
+                                    非常实用的分享！我们公司经常要求加班，但加班费计算一直不透明。请问如果劳动合同中没有明确约定工资标准，应该如何确定计算基数呢？
+                                </p>
+                                <div class="flex items-center space-x-4">
+                                    <button class="comment-like-btn flex items-center space-x-1 text-text-secondary hover:text-secondary transition-colors like-button" 
+                                            data-comment-id="comment1">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="comment-like-count">15</span>
+                                    </button>
+                                    <button class="comment-reply-btn text-text-secondary hover:text-accent transition-colors reply-button" 
+                                            data-comment-id="comment1">
+                                        <i class="fas fa-reply mr-1"></i>
+                                        回复
+                                    </button>
+                                </div>
+                                
+                                <!-- 回复列表 -->
+                                <div class="comment-replies mt-4 pl-4 border-l-2 border-dark-border space-y-4">
+                                    <div class="reply-item">
+                                        <div class="flex space-x-3">
+                                            <img class="reply-author-avatar w-8 h-8 rounded-full border-2 border-glass-border author-avatar cursor-pointer" 
+                                                 src="https://s.coze.cn/image/mISwOHmZ9Yc/" alt="作者头像" data-user-id="author" data-category="人物">
+                                            <div class="flex-1">
+                                                <div class="flex items-center space-x-2 mb-1">
+                                                    <span class="reply-author-name font-medium text-primary cursor-pointer hover:text-secondary transition-colors" 
+                                                          data-user-id="author">劳动法专家</span>
+                                                    <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">法律达人</span>
+                                                    <span class="text-sm text-text-secondary">1小时前</span>
+                                                </div>
+                                                <p class="text-text-primary mb-2 leading-relaxed">
+                                                    <span class="text-text-secondary">@职场小白</span> 这种情况下，一般以你实际工资收入的70%作为计算基数，但不得低于当地最低工资标准。建议你收集工资条、银行流水等证据。
+                                                </p>
+                                                <div class="flex items-center space-x-4">
+                                                    <button class="reply-like-btn flex items-center space-x-1 text-text-secondary hover:text-secondary transition-colors like-button" 
+                                                            data-reply-id="reply1">
+                                                        <i class="fas fa-heart"></i>
+                                                        <span class="reply-like-count">8</span>
+                                                    </button>
+                                                    <button class="reply-reply-btn text-text-secondary hover:text-accent transition-colors reply-button" 
+                                                            data-reply-id="reply1" data-target-user="劳动法专家">
+                                                        <i class="fas fa-reply mr-1"></i>
+                                                        回复
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 回复输入框 -->
+                                <div class="reply-input-section mt-4 hidden">
+                                    <div class="flex space-x-3">
+                                        <img src="https://s.coze.cn/image/J-ugu3EnIFI/" alt="我的头像" 
+                                             class="w-8 h-8 rounded-full border-2 border-glass-border" data-category="人物">
+                                        <div class="flex-1">
+                                            <textarea class="reply-input w-full p-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary comment-input resize-none"
+                                                      placeholder="回复..." rows="2"></textarea>
+                                            <div class="flex items-center justify-end mt-2 space-x-2">
+                                                <button class="cancel-reply px-3 py-1 text-sm text-text-secondary hover:text-primary transition-colors">取消</button>
+                                                <button class="submit-reply px-4 py-1 text-sm bg-secondary text-white rounded-md hover:bg-opacity-90 transition-all">回复</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论项 2 -->
+                    <div class="comment-item border-b border-dark-border pb-6 last:border-b-0 last:pb-0">
+                        <div class="flex space-x-4">
+                            <img class="comment-author-avatar w-10 h-10 rounded-full border-2 border-glass-border author-avatar cursor-pointer" 
+                                 src="https://s.coze.cn/image/vK30Xu9woRQ/" alt="用户头像" data-user-id="user2" data-category="人物">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="comment-author-name font-medium text-primary cursor-pointer hover:text-secondary transition-colors" 
+                                          data-user-id="user2">HR小李</span>
+                                    <span class="text-xs bg-accent bg-opacity-20 text-accent px-2 py-1 rounded">法律达人</span>
+                                    <span class="text-sm text-text-secondary">3小时前</span>
+                                </div>
+                                <p class="text-text-primary mb-3 leading-relaxed">
+                                    作为HR从业者，我想补充一点：企业在安排加班时，应当与员工协商一致，不得强制加班。同时，企业有义务建立完善的加班管理制度，明确加班费的计算和支付标准。
+                                </p>
+                                <div class="flex items-center space-x-4">
+                                    <button class="comment-like-btn flex items-center space-x-1 text-text-secondary hover:text-secondary transition-colors like-button" 
+                                            data-comment-id="comment2">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="comment-like-count">22</span>
+                                    </button>
+                                    <button class="comment-reply-btn text-text-secondary hover:text-accent transition-colors reply-button" 
+                                            data-comment-id="comment2">
+                                        <i class="fas fa-reply mr-1"></i>
+                                        回复
+                                    </button>
+                                </div>
+                                
+                                <!-- 回复输入框 -->
+                                <div class="reply-input-section mt-4 hidden">
+                                    <div class="flex space-x-3">
+                                        <img src="https://s.coze.cn/image/aEaoT8Ul8rA/" alt="我的头像" 
+                                             class="w-8 h-8 rounded-full border-2 border-glass-border" data-category="人物">
+                                        <div class="flex-1">
+                                            <textarea class="reply-input w-full p-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary comment-input resize-none"
+                                                      placeholder="回复..." rows="2"></textarea>
+                                            <div class="flex items-center justify-end mt-2 space-x-2">
+                                                <button class="cancel-reply px-3 py-1 text-sm text-text-secondary hover:text-primary transition-colors">取消</button>
+                                                <button class="submit-reply px-4 py-1 text-sm bg-secondary text-white rounded-md hover:bg-opacity-90 transition-all">回复</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论项 3 -->
+                    <div class="comment-item border-b border-dark-border pb-6 last:border-b-0 last:pb-0">
+                        <div class="flex space-x-4">
+                            <img class="comment-author-avatar w-10 h-10 rounded-full border-2 border-glass-border author-avatar cursor-pointer" 
+                                 src="https://s.coze.cn/image/jgPKatNC2fw/" alt="用户头像" data-user-id="user3" data-category="人物">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="comment-author-name font-medium text-primary cursor-pointer hover:text-secondary transition-colors" 
+                                          data-user-id="user3">法律学习者</span>
+                                    <span class="text-xs bg-primary bg-opacity-20 text-primary px-2 py-1 rounded">学法者</span>
+                                    <span class="text-sm text-text-secondary">5小时前</span>
+                                </div>
+                                <p class="text-text-primary mb-3 leading-relaxed">
+                                    学到了！之前一直不知道法定节假日加班是3倍工资，而且不能用补休代替。感谢分享这么详细的内容！
+                                </p>
+                                <div class="flex items-center space-x-4">
+                                    <button class="comment-like-btn flex items-center space-x-1 text-text-secondary hover:text-secondary transition-colors like-button" 
+                                            data-comment-id="comment3">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="comment-like-count">7</span>
+                                    </button>
+                                    <button class="comment-reply-btn text-text-secondary hover:text-accent transition-colors reply-button" 
+                                            data-comment-id="comment3">
+                                        <i class="fas fa-reply mr-1"></i>
+                                        回复
+                                    </button>
+                                </div>
+                                
+                                <!-- 回复输入框 -->
+                                <div class="reply-input-section mt-4 hidden">
+                                    <div class="flex space-x-3">
+                                        <img src="https://s.coze.cn/image/uVbyi3UPBuk/" alt="我的头像" 
+                                             class="w-8 h-8 rounded-full border-2 border-glass-border" data-category="人物">
+                                        <div class="flex-1">
+                                            <textarea class="reply-input w-full p-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary comment-input resize-none"
+                                                      placeholder="回复..." rows="2"></textarea>
+                                            <div class="flex items-center justify-end mt-2 space-x-2">
+                                                <button class="cancel-reply px-3 py-1 text-sm text-text-secondary hover:text-primary transition-colors">取消</button>
+                                                <button class="submit-reply px-4 py-1 text-sm bg-secondary text-white rounded-md hover:bg-opacity-90 transition-all">回复</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 加载更多 -->
+                <div class="text-center mt-8">
+                    <button id="load-more-comments" class="px-6 py-2 bg-glass-bg border border-glass-border rounded-lg text-text-primary hover:border-secondary transition-all">
+                        加载更多评论
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 解析URL参数的辅助函数
+            function getUrlParams() {
+                const params = {};
+                const queryString = window.location.search.substring(1);
+                const urlParams = new URLSearchParams(queryString);
+                
+                for(const [key, value] of urlParams.entries()) {
+                    params[key] = value;
+                }
+                return params;
+            }
+            
+            // 获取URL参数
+            const params = getUrlParams();
+            
+            // 如果有postId参数，可以根据ID加载对应的帖子内容
+            if(params.postId) {
+                loadPostContent(params.postId);
+            }
+            
+            // 模拟加载帖子内容的函数
+            function loadPostContent(postId) {
+                // 在实际应用中，这里会调用API获取数据
+                // 这里只是演示，使用模拟数据
+                console.log('加载帖子内容，ID:', postId);
+            }
+            
+            // 搜索框焦点效果
+            const searchInput = document.querySelector('#global-search');
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+            
+            // 搜索功能
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+                    }
+                }
+            });
+            
+            // 点赞功能
+            document.querySelector('#like-btn').addEventListener('click', function() {
+                const countElement = document.querySelector('#like-count');
+                let count = parseInt(countElement.textContent);
+                
+                if (this.classList.contains('liked')) {
+                    count--;
+                    this.classList.remove('liked');
+                    this.classList.remove('text-secondary');
+                    this.classList.add('text-text-secondary');
+                } else {
+                    count++;
+                    this.classList.add('liked');
+                    this.classList.remove('text-text-secondary');
+                    this.classList.add('text-secondary');
+                }
+                
+                countElement.textContent = count;
+            });
+            
+            // 收藏功能
+            document.querySelector('#favorite-btn').addEventListener('click', function() {
+                if (this.classList.contains('favorited')) {
+                    this.classList.remove('favorited');
+                    this.classList.remove('text-secondary');
+                    this.classList.add('text-text-secondary');
+                    this.innerHTML = '<i class="fas fa-bookmark text-lg"></i><span>收藏</span>';
+                } else {
+                    this.classList.add('favorited');
+                    this.classList.remove('text-text-secondary');
+                    this.classList.add('text-secondary');
+                    this.innerHTML = '<i class="fas fa-bookmark text-lg"></i><span>已收藏</span>';
+                }
+            });
+            
+            // 分享功能
+            document.querySelector('#share-btn').addEventListener('click', function() {
+                // 简单的分享功能，实际应用中可以调用分享API
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.querySelector('#post-title').textContent,
+                        text: '来法智星一起学习法律知识！',
+                        url: window.location.href
+                    });
+                } else {
+                    // 复制链接到剪贴板
+                    navigator.clipboard.writeText(window.location.href).then(function() {
+                        alert('链接已复制到剪贴板');
+                    });
+                }
+            });
+            
+            // 作者头像和昵称点击事件
+            document.querySelector('#author-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html?userId=author';
+            });
+            
+            document.querySelector('#author-name').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html?userId=author';
+            });
+            
+            // 圈子链接点击事件
+            document.querySelector('#circle-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CIRCLE_DETAIL.html?circleId=workplace-rights';
+            });
+            
+            // 评论排序切换
+            document.querySelector('#sort-latest').addEventListener('click', function() {
+                document.querySelector('#sort-hottest').classList.remove('bg-secondary', 'text-white');
+                document.querySelector('#sort-hottest').classList.add('bg-glass-bg', 'text-text-secondary');
+                this.classList.remove('bg-glass-bg', 'text-text-secondary');
+                this.classList.add('bg-secondary', 'text-white');
+                // 这里可以添加重新加载评论的逻辑
+                console.log('切换到最新评论');
+            });
+            
+            document.querySelector('#sort-hottest').addEventListener('click', function() {
+                document.querySelector('#sort-latest').classList.remove('bg-secondary', 'text-white');
+                document.querySelector('#sort-latest').classList.add('bg-glass-bg', 'text-text-secondary');
+                this.classList.remove('bg-glass-bg', 'text-text-secondary');
+                this.classList.add('bg-secondary', 'text-white');
+                // 这里可以添加重新加载评论的逻辑
+                console.log('切换到最热评论');
+            });
+            
+            // 发布评论
+            document.querySelector('#submit-comment').addEventListener('click', function() {
+                const input = document.querySelector('#comment-input');
+                const content = input.value.trim();
+                
+                if (content) {
+                    // 创建新评论元素
+                    const newComment = createCommentElement({
+                        id: 'new-comment-' + Date.now(),
+                        author: {
+                            id: 'current-user',
+                            name: '学法者',
+                            avatar: 'https://s.coze.cn/image/TReMyT9CYq8/',
+                            rank: '法律达人'
+                        },
+                        content: content,
+                        time: '刚刚',
+                        likes: 0,
+                        replies: []
+                    });
+                    
+                    // 添加到评论列表顶部
+                    document.querySelector('#comments-list').insertBefore(newComment, document.querySelector('#comments-list').firstChild);
+                    
+                    // 清空输入框
+                    input.value = '';
+                    
+                    // 更新评论总数
+                    const totalCommentsElement = document.querySelector('#total-comments');
+                    const currentCount = parseInt(totalCommentsElement.textContent.replace(/[()]/g, ''));
+                    totalCommentsElement.textContent = `(${currentCount + 1})`;
+                    
+                    // 重新绑定事件
+                    bindCommentEvents();
+                }
+            });
+            
+            // 评论输入框回车发布
+            document.querySelector('#comment-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.querySelector('#submit-comment').click();
+                }
+            });
+            
+            // 评论点赞功能
+            function bindCommentEvents() {
+                // 评论点赞
+                document.querySelectorAll('.comment-like-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const countElement = this.querySelector('.comment-like-count');
+                        let count = parseInt(countElement.textContent);
+                        
+                        if (this.classList.contains('liked')) {
+                            count--;
+                            this.classList.remove('liked');
+                            this.classList.remove('text-secondary');
+                            this.classList.add('text-text-secondary');
+                        } else {
+                            count++;
+                            this.classList.add('liked');
+                            this.classList.remove('text-text-secondary');
+                            this.classList.add('text-secondary');
+                        }
+                        
+                        countElement.textContent = count;
+                    });
+                });
+                
+                // 回复点赞
+                document.querySelectorAll('.reply-like-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const countElement = this.querySelector('.reply-like-count');
+                        let count = parseInt(countElement.textContent);
+                        
+                        if (this.classList.contains('liked')) {
+                            count--;
+                            this.classList.remove('liked');
+                            this.classList.remove('text-secondary');
+                            this.classList.add('text-text-secondary');
+                        } else {
+                            count++;
+                            this.classList.add('liked');
+                            this.classList.remove('text-text-secondary');
+                            this.classList.add('text-secondary');
+                        }
+                        
+                        countElement.textContent = count;
+                    });
+                });
+                
+                // 评论回复功能
+                document.querySelectorAll('.comment-reply-btn, .reply-reply-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const commentItem = this.closest('.comment-item, .reply-item');
+                        const replyInputSection = commentItem.querySelector('.reply-input-section');
+                        
+                        // 隐藏所有其他回复输入框
+                        document.querySelectorAll('.reply-input-section').forEach(section => {
+                            if (section !== replyInputSection) {
+                                section.classList.add('hidden');
+                            }
+                        });
+                        
+                        // 切换当前回复输入框
+                        replyInputSection.classList.toggle('hidden');
+                        
+                        // 如果显示，聚焦到输入框
+                        if (!replyInputSection.classList.contains('hidden')) {
+                            const replyInput = replyInputSection.querySelector('.reply-input');
+                            replyInput.focus();
+                            
+                            // 如果是回复特定用户，添加@提及
+                            const targetUser = this.dataset.targetUser;
+                            if (targetUser) {
+                                replyInput.value = `@${targetUser} `;
+                                replyInput.setSelectionRange(targetUser.length + 2, targetUser.length + 2);
+                            }
+                        }
+                    });
+                });
+                
+                // 取消回复
+                document.querySelectorAll('.cancel-reply').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const replyInputSection = this.closest('.reply-input-section');
+                        replyInputSection.classList.add('hidden');
+                        
+                        // 清空输入框
+                        replyInputSection.querySelector('.reply-input').value = '';
+                    });
+                });
+                
+                // 提交回复
+                document.querySelectorAll('.submit-reply').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const replyInputSection = this.closest('.reply-input-section');
+                        const input = replyInputSection.querySelector('.reply-input');
+                        const content = input.value.trim();
+                        
+                        if (content) {
+                            // 创建新回复元素
+                            const newReply = createReplyElement({
+                                id: 'new-reply-' + Date.now(),
+                                author: {
+                                    id: 'current-user',
+                                    name: '学法者',
+                                    avatar: 'https://s.coze.cn/image/Md-1LyjYb5o/',
+                                    rank: '法律达人'
+                                },
+                                content: content,
+                                time: '刚刚',
+                                likes: 0
+                            });
+                            
+                            // 添加到回复列表
+                            const commentItem = this.closest('.comment-item');
+                            let repliesContainer = commentItem.querySelector('.comment-replies');
+                            if (!repliesContainer) {
+                                // 如果没有回复列表，创建一个
+                                repliesContainer = document.createElement('div');
+                                repliesContainer.className = 'comment-replies mt-4 pl-4 border-l-2 border-dark-border space-y-4';
+                                commentItem.querySelector('.flex-1').appendChild(repliesContainer);
+                            }
+                            repliesContainer.appendChild(newReply);
+                            
+                            // 隐藏回复输入框并清空
+                            replyInputSection.classList.add('hidden');
+                            input.value = '';
+                            
+                            // 重新绑定事件
+                            bindCommentEvents();
+                        }
+                    });
+                });
+                
+                // 回复输入框回车提交
+                document.querySelectorAll('.reply-input').forEach(input => {
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this.closest('.reply-input-section').querySelector('.submit-reply').click();
+                        }
+                    });
+                });
+                
+                // 评论作者头像和昵称点击事件
+                document.querySelectorAll('.comment-author-avatar, .comment-author-name').forEach(element => {
+                    element.addEventListener('click', function() {
+                        const userId = this.dataset.userId;
+                        window.location.href = `P-USER_CENTER.html?userId=${userId}`;
+                    });
+                });
+                
+                // 回复作者头像和昵称点击事件
+                document.querySelectorAll('.reply-author-avatar, .reply-author-name').forEach(element => {
+                    element.addEventListener('click', function() {
+                        const userId = this.dataset.userId;
+                        window.location.href = `P-USER_CENTER.html?userId=${userId}`;
+                    });
+                });
+            }
+            
+            // 创建评论元素
+            function createCommentElement(comment) {
+                const div = document.createElement('div');
+                div.className = 'comment-item border-b border-dark-border pb-6 last:border-b-0 last:pb-0';
+                div.innerHTML = `
+                    <div class="flex space-x-4">
+                        <img class="comment-author-avatar w-10 h-10 rounded-full border-2 border-glass-border author-avatar cursor-pointer" 
+                             src="${comment.author.avatar}" alt="用户头像" data-user-id="${comment.author.id}" data-category="人物">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="comment-author-name font-medium text-primary cursor-pointer hover:text-secondary transition-colors" 
+                                      data-user-id="${comment.author.id}">${comment.author.name}</span>
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">${comment.author.rank}</span>
+                                <span class="text-sm text-text-secondary">${comment.time}</span>
+                            </div>
+                            <p class="text-text-primary mb-3 leading-relaxed">${comment.content}</p>
+                            <div class="flex items-center space-x-4">
+                                <button class="comment-like-btn flex items-center space-x-1 text-text-secondary hover:text-secondary transition-colors like-button" 
+                                        data-comment-id="${comment.id}">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="comment-like-count">${comment.likes}</span>
+                                </button>
+                                <button class="comment-reply-btn text-text-secondary hover:text-accent transition-colors reply-button" 
+                                        data-comment-id="${comment.id}">
+                                    <i class="fas fa-reply mr-1"></i>
+                                    回复
+                                </button>
+                            </div>
+                            
+                            <!-- 回复输入框 -->
+                            <div class="reply-input-section mt-4 hidden">
+                                <div class="flex space-x-3">
+                                    <img src="https://s.coze.cn/image/6ZSV3GDT0uk/" alt="我的头像" 
+                                         class="w-8 h-8 rounded-full border-2 border-glass-border" data-category="人物">
+                                    <div class="flex-1">
+                                        <textarea class="reply-input w-full p-3 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary comment-input resize-none"
+                                                  placeholder="回复..." rows="2"></textarea>
+                                        <div class="flex items-center justify-end mt-2 space-x-2">
+                                            <button class="cancel-reply px-3 py-1 text-sm text-text-secondary hover:text-primary transition-colors">取消</button>
+                                            <button class="submit-reply px-4 py-1 text-sm bg-secondary text-white rounded-md hover:bg-opacity-90 transition-all">回复</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return div;
+            }
+            
+            // 创建回复元素
+            function createReplyElement(reply) {
+                const div = document.createElement('div');
+                div.className = 'reply-item';
+                div.innerHTML = `
+                    <div class="flex space-x-3">
+                        <img class="reply-author-avatar w-8 h-8 rounded-full border-2 border-glass-border author-avatar cursor-pointer" 
+                             src="${reply.author.avatar}" alt="作者头像" data-user-id="${reply.author.id}" data-category="人物">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="reply-author-name font-medium text-primary cursor-pointer hover:text-secondary transition-colors" 
+                                      data-user-id="${reply.author.id}">${reply.author.name}</span>
+                                <span class="text-xs bg-secondary bg-opacity-20 text-secondary px-2 py-1 rounded">${reply.author.rank}</span>
+                                <span class="text-sm text-text-secondary">${reply.time}</span>
+                            </div>
+                            <p class="text-text-primary mb-2 leading-relaxed">${reply.content}</p>
+                            <div class="flex items-center space-x-4">
+                                <button class="reply-like-btn flex items-center space-x-1 text-text-secondary hover:text-secondary transition-colors like-button" 
+                                        data-reply-id="${reply.id}">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="reply-like-count">${reply.likes}</span>
+                                </button>
+                                <button class="reply-reply-btn text-text-secondary hover:text-accent transition-colors reply-button" 
+                                        data-reply-id="${reply.id}" data-target-user="${reply.author.name}">
+                                    <i class="fas fa-reply mr-1"></i>
+                                    回复
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return div;
+            }
+            
+            // 加载更多评论
+            document.querySelector('#load-more-comments').addEventListener('click', function() {
+                // 模拟加载更多评论
+                this.textContent = '加载中...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.textContent = '加载更多评论';
+                    this.disabled = false;
+                    console.log('加载更多评论');
+                }, 1000);
+            });
+            
+            // 用户头像点击事件
+            document.querySelector('#user-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html';
+            });
+            
+            // 初始化绑定事件
+            bindCommentEvents();
+        });
+    </script>
+</body>
+</html>

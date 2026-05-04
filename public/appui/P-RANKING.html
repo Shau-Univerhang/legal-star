@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="auth_guard.js"></script>
+    <title>排行榜 - 法智星</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFE8D6',
+                        secondary: '#E67E22', 
+                        accent: '#34495E',
+                        dark: '#1E272E',
+                        'dark-card': '#2C3E50',
+                        'dark-border': '#3D5A80',
+                        'text-primary': '#FFE8D6',
+                        'text-secondary': '#B2BEC3',
+                        'glass-bg': 'rgba(44, 62, 80, 0.85)',
+                        'glass-border': 'rgba(255, 232, 214, 0.3)'
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 1rem;
+        }
+        
+        .glass-nav {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-sidebar {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 232, 214, 0.2);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(244, 130, 36, 0.3);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tab-active {
+            background: rgba(230, 126, 34, 0.2);
+            color: #FFE8D6;
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+        
+        .tab-inactive {
+            background: rgba(44, 62, 80, 0.5);
+            color: #B2BEC3;
+            border: 1px solid rgba(255, 232, 214, 0.1);
+        }
+        
+        .tab-inactive:hover {
+            background: rgba(230, 126, 34, 0.1);
+            color: #FFE8D6;
+            border: 1px solid rgba(230, 126, 34, 0.2);
+        }
+        
+        .rank-crown {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .current-user {
+            background: rgba(230, 126, 34, 0.1);
+            border: 2px solid rgba(230, 126, 34, 0.3);
+        }
+        
+        .table-row:hover {
+            background: rgba(255, 232, 214, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-dark text-text-primary min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav id="top-nav" class="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
+        <div class="flex items-center justify-between h-full px-6">
+            <!-- Logo区域 -->
+            <div id="logo-section" class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-white text-lg"></i>
+                </div>
+                <h1 class="text-xl font-bold gradient-text">法智星</h1>
+            </div>
+            
+            <!-- 主导航 -->
+            <nav id="main-nav" class="hidden md:flex items-center space-x-8">
+                <a href="P-HOME.html" class="text-text-secondary hover:text-primary transition-colors py-1">首页</a>
+                <a href="P-CASE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">案例</a>
+                <a href="P-CIRCLE_LIST.html" class="text-text-secondary hover:text-primary transition-colors py-1">圈子</a>
+                
+            </nav>
+            
+            <!-- 搜索框和用户区域 -->
+            <div id="user-section" class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden lg:block">
+                    <input type="text" id="global-search" placeholder="搜索案例、知识点..." 
+                           class="w-64 px-4 py-2 bg-dark-card border border-glass-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-secondary transition-colors">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+                
+                <!-- 消息通知 -->
+                <button id="notification-btn" class="relative p-2 text-text-secondary hover:text-primary transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
+                </button>
+                
+                <!-- 用户头像 -->
+                <div id="user-avatar" class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img src="https://s.coze.cn/image/tPdTjh-V2X0/" 
+                         alt="用户头像" class="w-8 h-8 rounded-full border-2 border-secondary">
+                    <span class="hidden md:block text-sm">学法者</span>
+                    <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- 左侧菜单 -->
+        <aside id="sidebar" class="glass-sidebar w-64 min-h-screen p-6">
+            <nav id="sidebar-nav" class="space-y-2">
+                <a href="P-HOME.html" id="nav-home" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-house text-lg"></i>
+                    <span>首页</span>
+                </a>
+                <a href="P-CASE_LIST.html" id="nav-cases" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-briefcase text-lg"></i>
+                    <span>案例库</span>
+                </a>
+                <a href="P-CIRCLE_LIST.html" id="nav-circles" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-users text-lg"></i>
+                    <span>学习圈子</span>
+                </a>
+                
+                <a href="P-AI_CHAT.html" id="nav-ai" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-eye text-lg"></i>
+                    <span>AI咨询</span>
+                </a>
+                <a href="P-LEARNING_MATERIAL.html" id="nav-materials" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-book text-lg"></i>
+                    <span>学习资料</span>
+                </a>
+                <a href="P-RANKING.html" id="nav-ranking" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-secondary bg-opacity-20 text-primary border border-secondary border-opacity-30 shadow-md">
+                    <i class="fas fa-trophy text-lg"></i>
+                    <span>排行榜</span>
+                </a>
+
+                <div class="border-t border-dark-border my-4"></div>
+
+                <a href="P-USER_CENTER.html" id="nav-profile" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-user text-lg"></i>
+                    <span>个人中心</span>
+                </a>
+                <a href="P-SETTINGS.html" id="nav-settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-glass-bg transition-all">
+                    <i class="fas fa-gear text-lg"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main id="main-content" class="flex-1 p-8 min-h-screen">
+            <!-- 页面头部 -->
+            <header id="page-header" class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold gradient-text mb-2">排行榜</h2>
+                        <nav class="text-sm text-text-secondary">
+                            <a href="P-HOME.html" class="hover:text-primary transition-colors">首页</a>
+                            <span class="mx-2">/</span>
+                            <span class="text-primary">排行榜</span>
+                        </nav>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-text-secondary">我的排名</div>
+                        <div class="text-lg font-semibold text-secondary">#15</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 排行榜类型切换 -->
+            <section id="ranking-tabs" class="mb-8">
+                <div class="flex space-x-4" role="tablist">
+                    <button id="tab-experience" class="px-6 py-3 text-sm font-medium rounded-lg focus:outline-none tab-active transition-all" role="tab" aria-controls="experience-content">
+                        <i class="fas fa-trophy mr-2"></i>法治段位榜
+                    </button>
+                    <button id="tab-time" class="px-6 py-3 text-sm font-medium rounded-lg focus:outline-none tab-inactive transition-all" role="tab" aria-controls="time-content">
+                        <i class="fas fa-clock mr-2"></i>学习时长榜
+                    </button>
+                    <button id="tab-accuracy" class="px-6 py-3 text-sm font-medium rounded-lg focus:outline-none tab-inactive transition-all" role="tab" aria-controls="accuracy-content">
+                        <i class="fas fa-bullseye mr-2"></i>答题正确率榜
+                    </button>
+                </div>
+            </section>
+
+            <!-- 法治段位榜 -->
+            <section id="experience-content" class="tab-content">
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-dark-border">
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">排名</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">用户</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">法治段位</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">经验值</th>
+                                </tr>
+                            </thead>
+                            <tbody id="experience-table-body">
+                                <!-- Data loaded via API -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 学习时长榜 -->
+            <section id="time-content" class="tab-content hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-dark-border">
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">排名</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">用户</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">法治段位</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">学习时长(小时)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="time-table-body">
+                                <!-- Data loaded via API -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 答题正确率榜 -->
+            <section id="accuracy-content" class="tab-content hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-dark-border">
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">排名</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">用户</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">法治段位</th>
+                                    <th class="text-left py-3 px-4 text-text-secondary font-medium">答题正确率</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accuracy-table-body">
+                                <!-- Data loaded via API -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to load leaderboard data
+            function loadLeaderboard(type) {
+                var tableBodyId = type + '-table-body';
+                var tableBody = document.getElementById(tableBodyId);
+                var sortParam = type === 'experience' ? 'score' : type;
+                
+                if (!tableBody || typeof window.fetchLeaderboard !== 'function') return;
+
+                // Show loading state (optional)
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-text-secondary">加载中...</td></tr>';
+
+                window.fetchLeaderboard({ limit: 20, sort: sortParam }).then(function(rows) {
+                    if (!rows.length) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-text-secondary">暂无数据</td></tr>';
+                        return;
+                    }
+
+                    // Get current user ID
+                    var currentUser = window.auth && window.auth.getUser ? window.auth.getUser() : null;
+                    var currentUserId = currentUser ? currentUser.id : null;
+
+                    var html = rows.map(function(r) {
+                        var isCurrent = (r.user_id === currentUserId);
+                        var rowClass = 'table-row border-b border-dark-border' + (isCurrent ? ' current-user' : '');
+                        var rankIcon = r.rank === 1 ? '<i class="fas fa-crown rank-crown text-xl mr-2"></i>' : r.rank === 2 ? '<i class="fas fa-medal text-yellow-500 text-xl mr-2"></i>' : r.rank === 3 ? '<i class="fas fa-award text-orange-500 text-xl mr-2"></i>' : '';
+                        
+                        // Determine value to display based on type
+                        var valueDisplay = '';
+                        if (type === 'experience') {
+                            valueDisplay = r.score || 0;
+                        } else if (type === 'time') {
+                            valueDisplay = r.study_hours || 0;
+                        } else if (type === 'accuracy') {
+                            valueDisplay = (r.accuracy || 0) + '%';
+                        }
+
+                        return '<tr class="' + rowClass + '">' +
+                            '<td class="py-4 px-4"><div class="flex items-center">' + rankIcon + '<span class="font-bold ' + (isCurrent ? 'text-secondary' : 'text-primary') + '">' + r.rank + '</span></div></td>' +
+                            '<td class="py-4 px-4"><div class="flex items-center space-x-3">' +
+                            '<img src="' + (r.avatar_url || 'https://s.coze.cn/image/tPdTjh-V2X0/') + '" alt="" class="w-10 h-10 rounded-full border-2 border-secondary">' +
+                            '<div><div class="font-medium ' + (isCurrent ? 'text-secondary' : 'text-primary') + ' cursor-pointer hover:text-secondary transition-colors" data-user-id="' + r.user_id + '">' + (r.username || '匿名用户') + '</div>' +
+                            '<div class="text-sm text-text-secondary">Lv.' + (r.level || 1) + '</div></div></div></td>' +
+                            '<td class="py-4 px-4"><span class="px-3 py-1 bg-gradient-to-r from-secondary to-accent text-white text-sm rounded-full">' + (r.rank_title || '法治新人') + '</span></td>' +
+                            '<td class="py-4 px-4"><span class="font-semibold ' + (isCurrent ? 'text-secondary' : 'text-primary') + '">' + valueDisplay + '</span></td></tr>';
+                    }).join('');
+                    tableBody.innerHTML = html;
+
+                    // Re-attach click events for user names
+                    const userNames = tableBody.querySelectorAll('[data-user-id]');
+                    userNames.forEach(userName => {
+                        userName.addEventListener('click', function() {
+                            const userId = this.getAttribute('data-user-id');
+                            window.location.href = `P-USER_CENTER.html?userId=${userId}`;
+                        });
+                    });
+
+                }).catch(function(err) {
+                    console.error(err);
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">加载失败</td></tr>';
+                });
+            }
+
+            // Initial load
+            loadLeaderboard('experience');
+
+            // 搜索框焦点效果
+            const searchInput = document.querySelector('#global-search');
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
+            });
+
+            // 搜索功能
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        window.location.href = `P-SEARCH_RESULT.html?keyword=${encodeURIComponent(keyword)}`;
+                    }
+                }
+            });
+
+            // 标签切换功能
+            const tabs = document.querySelectorAll('[role="tab"]');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 隐藏所有内容
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    
+                    // 重置所有标签样式
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    
+                    // 显示当前标签内容
+                    const contentId = this.getAttribute('aria-controls');
+                    document.querySelector(`#${contentId}`).classList.remove('hidden');
+                    
+                    // 设置当前标签样式
+                    this.classList.remove('tab-inactive');
+                    this.classList.add('tab-active');
+
+                    // Load data for the selected tab
+                    const type = contentId.replace('-content', '');
+                    loadLeaderboard(type);
+                });
+            });
+
+            // 用户昵称点击事件
+            const userNames = document.querySelectorAll('[data-user-id]');
+            userNames.forEach(userName => {
+                userName.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    window.location.href = `P-USER_CENTER.html?userId=${userId}`;
+                });
+            });
+
+            // 导航菜单点击事件
+            document.querySelector('#nav-home').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#nav-cases').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#nav-circles').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CIRCLE_LIST.html';
+            });
+
+            
+
+
+            document.querySelector('#nav-materials').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-LEARNING_MATERIAL.html';
+            });
+
+            document.querySelector('#nav-profile').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            document.querySelector('#nav-settings').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 顶部导航点击事件
+            document.querySelector('#user-avatar').addEventListener('click', function() {
+                window.location.href = 'P-USER_CENTER.html';
+            });
+
+            // 主导航链接点击事件
+            document.querySelector('#main-nav a[href="P-HOME.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-HOME.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-CASE_LIST.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CASE_LIST.html';
+            });
+
+            document.querySelector('#main-nav a[href="P-CIRCLE_LIST.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'P-CIRCLE_LIST.html';
+            });
+
+            
+        });
+    </script>
+</body>
+</html>

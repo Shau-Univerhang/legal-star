@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法律问答 - 法智星</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1E272E 0%, #2C3E50 100%);
+            color: #FFE8D6;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .header {
+            background: rgba(30, 39, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 232, 214, 0.2);
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .back-btn {
+            color: #FFE8D6;
+            text-decoration: none;
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .back-btn:hover { opacity: 1; }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FAE9DB, #F48224);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        .search-box {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .search-box h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #B2BEC3;
+        }
+        .search-input-wrap {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .search-input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            background: rgba(30, 39, 46, 0.8);
+            border: 1px solid rgba(255, 232, 214, 0.2);
+            border-radius: 0.5rem;
+            color: #FFE8D6;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: #E67E22;
+        }
+        .search-input::placeholder {
+            color: #7F8C8D;
+        }
+        .search-btn {
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #E67E22, #D35400);
+            border: none;
+            border-radius: 0.5rem;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .search-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .quick-questions {
+            margin-top: 1rem;
+        }
+        .quick-questions h3 {
+            font-size: 0.85rem;
+            color: #7F8C8D;
+            margin-bottom: 0.75rem;
+        }
+        .quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .quick-tag {
+            padding: 0.4rem 0.8rem;
+            background: rgba(52, 73, 94, 0.6);
+            border: 1px solid rgba(255, 232, 214, 0.15);
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            color: #B2BEC3;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-tag:hover {
+            background: rgba(230, 126, 34, 0.3);
+            border-color: #E67E22;
+            color: #FFE8D6;
+        }
+        .answer-card {
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 232, 214, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .answer-card.loading {
+            opacity: 0.7;
+        }
+        .answer-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 232, 214, 0.1);
+        }
+        .answer-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #E67E22, #D35400);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .answer-question {
+            flex: 1;
+        }
+        .answer-question h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .answer-question span {
+            font-size: 0.8rem;
+            color: #7F8C8D;
+        }
+        .answer-content {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+        .answer-content .highlight {
+            color: #E67E22;
+            font-weight: 600;
+        }
+        .related-case {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(30, 39, 46, 0.6);
+            border-radius: 0.75rem;
+            border-left: 3px solid #E67E22;
+        }
+        .related-case h4 {
+            font-size: 0.85rem;
+            color: #B2BEC3;
+            margin-bottom: 0.5rem;
+        }
+        .related-case p {
+            font-size: 0.9rem;
+            color: #FFE8D6;
+        }
+        .suggestions {
+            margin-top: 1.5rem;
+        }
+        .suggestions h4 {
+            font-size: 0.85rem;
+            color: #7F8C8D;
+            margin-bottom: 0.75rem;
+        }
+        .suggestion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            background: rgba(52, 73, 94, 0.4);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            color: #B2BEC3;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .suggestion-item:hover {
+            background: rgba(230, 126, 34, 0.2);
+            color: #FFE8D6;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #7F8C8D;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .nav-links {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 232, 214, 0.1);
+        }
+        .nav-links a {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background: rgba(52, 73, 94, 0.6);
+            border-radius: 0.5rem;
+            color: #FFE8D6;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s;
+        }
+        .nav-links a:hover {
+            background: rgba(230, 126, 34, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="P-HOME.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <h1>法律智能问答</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="search-box">
+            <h2>输入您的法律问题</h2>
+            <div class="search-input-wrap">
+                <input type="text" id="questionInput" class="search-input" 
+                    placeholder="例如：试用期被辞退有赔偿吗？网购商品可以七天无理由退货吗？" 
+                    onkeypress="if(event.key==='Enter')searchQuestion()">
+                <button id="searchBtn" class="search-btn" onclick="searchQuestion()">查询</button>
+            </div>
+            <div class="quick-questions">
+                <h3>常见问题：</h3>
+                <div class="quick-tags">
+                    <span class="quick-tag" onclick="quickAsk('试用期被辞退有赔偿吗？')">试用期被辞退</span>
+                    <span class="quick-tag" onclick="quickAsk('网购商品可以七天无理由退货吗？')">七天无理由退货</span>
+                    <span class="quick-tag" onclick="quickAsk('加班费是怎么计算的？')">加班费计算</span>
+                    <span class="quick-tag" onclick="quickAsk('年假有多少天？')">年假天数</span>
+                    <span class="quick-tag" onclick="quickAsk('公司不签劳动合同违法吗？')">不签劳动合同</span>
+                    <span class="quick-tag" onclick="quickAsk('定金和订金有什么区别？')">定金与订金</span>
+                    <span class="quick-tag" onclick="quickAsk('高温津贴有多少钱？')">高温津贴</span>
+                    <span class="quick-tag" onclick="quickAsk('网上骂人侵犯名誉权吗？')">网络名誉权</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultArea"></div>
+
+        <div class="nav-links">
+            <a href="P-HOME.html"><i class="fas fa-home"></i> 返回首页</a>
+            <a href="P-CASE_LIST.html"><i class="fas fa-book"></i> 案例库</a>
+            <a href="P-LEARNING_MATERIAL.html"><i class="fas fa-graduation-cap"></i> 学习中心</a>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        const SUGGESTED_QUESTIONS = [
+            '试用期被辞退有赔偿吗？',
+            '网购商品可以七天无理由退货吗？',
+            '加班费是怎么计算的？',
+            '年假有多少天？',
+            '公司不签劳动合同违法吗？',
+            '定金和订金有什么区别？能退吗？'
+        ];
+
+        function quickAsk(question) {
+            document.getElementById('questionInput').value = question;
+            searchQuestion();
+        }
+
+        async function searchQuestion() {
+            const input = document.getElementById('questionInput');
+            const btn = document.getElementById('searchBtn');
+            const resultArea = document.getElementById('resultArea');
+            const question = input.value.trim();
+
+            if (!question) {
+                input.focus();
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+            resultArea.innerHTML = '<div class="answer-card loading"><div class="empty-state"><i class="fas fa-search"></i><p>正在为您查询...</p></div></div>';
+
+            try {
+                const res = await fetch(apiUrl('/api/qa?q=' + encodeURIComponent(question)));
+                const data = await res.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                renderAnswer(data);
+            } catch (err) {
+                resultArea.innerHTML = `
+                    <div class="answer-card">
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>查询失败：${err.message}</p>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '查询';
+            }
+        }
+
+        function renderAnswer(data) {
+            const resultArea = document.getElementById('resultArea');
+
+            if (data.matched) {
+                let answerHtml = data.answer
+                    .replace(/\n/g, '<br>')
+                    .replace(/[0-9️⃣]+/g, '<span class="highlight">$&</span>')
+                    .replace(/[✅❌🚫💡📅💰⏰🌡️🛡️📞💒📋💊⚠️]/g, '<span class="highlight">$&</span>');
+
+                resultArea.innerHTML = `
+                    <div class="answer-card">
+                        <div class="answer-header">
+                            <div class="answer-icon"><i class="fas fa-balance-scale"></i></div>
+                            <div class="answer-question">
+                                <h3>${escapeHtml(data.question)}</h3>
+                                <span>已为您找到答案</span>
+                            </div>
+                        </div>
+                        <div class="answer-content">${answerHtml}</div>
+                        ${data.relatedCase ? `
+                            <div class="related-case">
+                                <h4><i class="fas fa-book"></i> 相关案例</h4>
+                                <p>${escapeHtml(data.relatedCase)}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                let casesHtml = '';
+                if (data.relatedCases && data.relatedCases.length > 0) {
+                    casesHtml = `
+                        <div class="related-case">
+                            <h4><i class="fas fa-folder-open"></i> 相关案例</h4>
+                            ${data.relatedCases.map(c => `
+                                <p>• ${escapeHtml(c.title)} <span style="color:#7F8C8D;font-size:0.8rem;">(${escapeHtml(c.field || '通用')} / ${escapeHtml(c.difficulty || '普通')})</span></p>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                resultArea.innerHTML = `
+                    <div class="answer-card">
+                        <div class="answer-header">
+                            <div class="answer-icon"><i class="fas fa-search"></i></div>
+                            <div class="answer-question">
+                                <h3>${escapeHtml(data.question)}</h3>
+                                <span>${data.answer}</span>
+                            </div>
+                        </div>
+                        ${casesHtml}
+                        <div class="suggestions">
+                            <h4><i class="fas fa-lightbulb"></i> 您可能想了解</h4>
+                            <div class="suggestion-list">
+                                ${(data.suggestions || SUGGESTED_QUESTIONS).map(q => `
+                                    <div class="suggestion-item" onclick="quickAsk('${escapeHtml(q).replace(/'/g, "\\'")}')">
+                                        ${escapeHtml(q)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
